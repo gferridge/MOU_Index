@@ -1,0 +1,150 @@
+---
+title: "MOU_Index"
+output: html_document
+date: "2024-09-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(gcookbook)
+library(ggrepel)
+library(ggsci)
+library(ggthemes)
+library(NLP)
+library(ggrepel)
+library(worldfootballR)
+library(jtools)
+library(pwr)
+library(ggalt)
+```
+
+
+## Loading Data
+
+```{r data}
+DAVIESdata.2024.04.02 <- read.csv("C:/Users/George Ferridge/Downloads/DAVIESdata-2017-2024-raw.csv")
+df <- DAVIESdata.2024.04.02
+```
+
+## Calculate Team Aggregates on DAVIES data (Minutes weighted)
+
+```{r}
+df_group <- df %>% group_by(League, Team, Season, Gen..Role) %>% 
+    summarise(DAVIES_TOTAL = sum(DAVIES), 
+              DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+```
+
+## Calculate League averages, STDevs and Vars for the same values
+
+```{r}
+df_2 <- df_group %>% group_by(League, Season, Gen..Role) %>%
+    summarise(League_DAVIES = mean(DAVIES_weighted),
+              Raw_League_DAVIES = mean(DAVIES_TOTAL),
+              SD_League = sd(DAVIES_weighted),
+              Raw_SD_League = sd(DAVIES_TOTAL))
+```
+
+## Join these two datasets and create a Z score for each Team and Role
+
+```{r}
+df_together <- left_join(df_group,df_2, join_by(League, Season, Gen..Role))
+
+
+df_together$Z <- (df_together$DAVIES_weighted - df_together$League_DAVIES)/df_together$SD_League
+```
+
+ At this point I see that the model is working as intended, with teams coming out that make a lot of sense. Manchester United's weakness in central defense, Barcelona's strength in creativity.
+
+
+Now I want to add wages to the player data, which I'll do from scraping FBRef. This code does  a few different things. It firstly takes the nations that I would like it to (top 5 leagues) and gets league URLS for it for every year in the sample. It then scrapes these league sites for the team urls. It then scrapes wage data for all available team_urls, converts it into a single value from its initial state as a length one vector and then saves it as a csv which will be called instead from now on. This code can be skipped if there is a link to the csv. 
+
+```{r, eval=FALSE}
+
+
+nations <- c("GER", "ENG", "FRA", "ESP", "ITA")
+
+league_urls <- c()
+
+for (year in 2018:2024){
+  for (nation in nations){
+    new_urls <- fb_league_urls(country=nation, gender = "M", year, tier = "1st")
+    league_urls <- c(league_urls, new_urls)
+  }
+}
+
+team_urls <- c()
+for (league in league_urls){
+  new_urls <- fb_teams_urls(league, time_pause=3)
+  team_urls <- c(team_urls, new_urls)
+}
+
+
+team_urls[team_urls != "https://fbref.com/en/squads/60b5e41f/2017-2018/Hannover-96-Stats"]
+
+wage_data = data.frame()
+
+get_wages <- function(urls, df){
+  tryCatch(
+    {
+      for (url in urls){
+        stringurl <- as.String(url)
+        new_df <- fb_squad_wages(team_urls = url, time_pause = 5)
+        df <- rbind(df, new_df)
+      }
+      error = function(e) {
+        print(stringurl + " failed")
+        print(e)
+      }
+      return(df)
+    }
+  )
+}
+wage_data <- get_wages(team_urls, wage_data)
+
+
+wage_data = data.frame()
+
+get_wages <- function(urls, df){
+  results_list <- list()  # Use a list to store data frames
+  for (url in urls) {
+    tryCatch({
+      new_df <- fb_squad_wages(team_urls = url, time_pause = 5)
+      results_list[[url]] <- new_df
+    }, error = function(e) {
+      print(paste(url, "failed"))
+      print(e$message)  # Print error message
+    })
+  }
+  # Combine all data frames into one
+  df <- do.call(rbind, results_list)
+  return(df)
+}
+
+# Assuming team_urls is defined somewhere in your script
+wage_data <- get_wages(team_urls, wage_data)
+
+wage_data$WeeklyWageEUR <- as.String(wage_data$WeeklyWageEUR)
+
+wage_data$WeeklyWageEUR <- sapply(wage_data$WeeklyWageEUR, function(x) { x[[1]] })
+wage_data$WeeklyWageGBP <- sapply(wage_data$WeeklyWageGBP, function(x) { x[[1]] })
+wage_data$WeeklyWageUSD <- sapply(wage_data$WeeklyWageUSD, function(x) { x[[1]] })
+wage_data$AnnualWageEUR <- sapply(wage_data$AnnualWageEUR, function(x) { x[[1]] })
+wage_data$AnnualWageGBP <- sapply(wage_data$AnnualWageGBP, function(x) { x[[1]] })
+wage_data$AnnualWageUSD <- sapply(wage_data$AnnualWageUSD, function(x) { x[[1]] })
+
+write.csv(wage_data, "wage_data.csv", row.names=FALSE)
+
+```
+
+
+## Use preprepared wage data instead of scraping
+
+```{r}
+wage_data <- read.csv("wage_data.csv")
+```
+
+
+
+
