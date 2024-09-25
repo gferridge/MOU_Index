@@ -60,7 +60,7 @@ df_together$Z <- (df_together$DAVIES_weighted - df_together$League_DAVIES)/df_to
 
 Now I want to add wages to the player data, which I'll do from scraping FBRef. This code does  a few different things. It firstly takes the nations that I would like it to (top 5 leagues) and gets league URLS for it for every year in the sample. It then scrapes these league sites for the team urls. It then scrapes wage data for all available team_urls, converts it into a single value from its initial state as a length one vector and then saves it as a csv which will be called instead from now on. This code can be skipped if there is a link to the csv. 
 
-```{r, eval=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 
 
 nations <- c("GER", "ENG", "FRA", "ESP", "ITA")
@@ -145,6 +145,189 @@ write.csv(wage_data, "wage_data.csv", row.names=FALSE)
 wage_data <- read.csv("wage_data.csv")
 ```
 
+
+## Transformations to alter wage data storage for future manipulation
+
+```{r}
+
+wage_data[] <- lapply(wage_data, function(x) if (is.list(x)) sapply(x, function(y) y[[1]], simplify = "vector") else x)
+
+sapply(wage_data, is.list)
+
+wage_data$WeeklyWageEUR <- sapply(wage_data$WeeklyWageEUR, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageEUR <- vapply(wage_data$WeeklyWageEUR, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageGBP<- sapply(wage_data$WeeklyWageGBP, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageGBP <- vapply(wage_data$WeeklyWageGBP, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageUSD <- sapply(wage_data$WeeklyWageUSD, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageUSD <- vapply(wage_data$WeeklyWageUSD, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageEUR <- sapply(wage_data$AnnualWageEUR, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageEUR <- vapply(wage_data$AnnualWageEUR, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageGBP <- sapply(wage_data$AnnualWageGBP, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageGBP <- vapply(wage_data$AnnualWageGBP, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageUSD <- sapply(wage_data$AnnualWageUSD, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageUSD <- vapply(wage_data$AnnualWageUSD, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageEUR <- wage_data$WeeklyWageEUR_num
+```
+
+## Add wage data to the original dataframe by player and season
+
+```{r}
+df_wage <- left_join(df, wage_data, by=c("Player", "Season"))
+```
+
+
+## Add in lags variables for previous seasons performance in order to calibrate models
+```{r}
+lags <- df_wage
+
+lags <- lags %>%
+  arrange(Player, Season) %>%  # Sort by player and season
+  group_by(Player) %>%         # Group by player, but not reducing data
+  mutate(
+    stats_last_season = lag(DAVIES, 1),     # Stats from the previous season
+    stats_2_seasons_ago = lag(DAVIES, 2),   # Stats from two seasons ago
+    stats_3_seasons_ago = lag(DAVIES, 3),   # Stats from three seasons ago
+    stats_4_seasons_ago = lag(DAVIES, 4),   # Stats from four seasons ago
+    stats_5_seasons_ago = lag(DAVIES, 5),   # Stats from five seasons ago
+    stats_6_seasons_ago = lag(DAVIES, 6)    # Stats from six seasons ago
+  ) %>%
+  ungroup()  # Optionally remove the grouping structure
+```
+
+
+## A couple of prediction models, selected from a larger suite. Linear Model 2 is used as prediction algorithm moving forward
+
+```{r}
+lm1 <- lm(DAVIES ~ WeeklyWageEUR+League+Gen..Role, df_wage)
+
+summary(lm1)
+
+lm2 <- lm(DAVIES ~ WeeklyWageEUR+Gen..Role+League+Min, lags)
+
+summary(lm2)
+```
+
+## Generate Predictions for as many players as possible. Debatable assumption made here: players who do not have data from the previous season are assumed to have been purely average for their age, scoring a 0.
+
+```{r}
+
+lags2 <- lags
+
+interested_leagues <- c("Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1")
+
+# Filter the dataframe
+filtered_lags2 <- lags2 %>%
+  filter(League %in% interested_leagues)
+
+# Display the filtered dataframe
+df_predict <- filtered_lags2 %>%
+  mutate(across(starts_with("stats"), ~replace_na(., 0)))
+
+# Predict using the model
+df_predict$predicted_stats <- predict(lm2, newdata = filtered_lags2, type = "response")
+
+```
+
+
+## Grouping these predictions by position group and league averages, much like I did for current season performance.
+
+```{r}
+grouped_predictions <- df_predict %>% group_by(League, Team.x, Season, Gen..Role) %>% 
+  summarise(predicted_stats = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+league_predictions <- grouped_predictions %>% group_by(League, Season, Gen..Role) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predicted_stats),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predicted_stats))
+
+
+predictions_together <- left_join(grouped_predictions, league_predictions, join_by(League, Season, Gen..Role))
+```
+
+## Slight cleaning to make future analysis easier
+
+```{r}
+
+predictions_together$Z_predicted <- ifelse(predictions_together$SD_predictions > 0, (predictions_together$weighted_predictions - predictions_together$League_predictions)/predictions_together$SD_predictions, 0)
+
+predictions_together$Team <- predictions_together$Team.x
+```
+
+## Combined data
+
+```{r}
+data_plus_predictions <- left_join(df_together, predictions_together, join_by(Team, Season, Gen..Role))
+```
+
+
+## Importing manager data
+
+```{r}
+Managers_DAVIES <- read.csv("Managers_DAVIES.csv")
+data_plus_predictions$League <- data_plus_predictions$League.x
+managers <- left_join(Managers_DAVIES, data_plus_predictions, join_by(League, Gen..Role, Team, Season))
+```
+
+
+## Linear models to look at the effect of individual managers
+
+```{r}
+
+lm5 <- lm(Z.x ~ Manager+Z_predicted, data=managers)
+lm6 <- lm(DAVIES_weighted.y ~ Manager + weighted_predictions, managers)
+
+summary(lm5)
+
+lm6 <- lm(DAVIES_weighted.y ~ weighted_predictions, managers)
+
+plot_summs(lm6, coefs = c( "ManagerPep Guardiola", "ManagerJurgen Klopp", "ManagerMichel","ManagerRoberto De Zerbi",
+                           "ManagerMauricio Pochettino", "ManagerXavi", "ManagerXabi Alonso", "ManagerSteve Bruce",
+                           "ManagerScott Parker", "ManagerRoy Hodgson", "ManagerMikel Arteta", "ManagerJose Mourinho",
+                           "ManagerErik ten Hag", "ManagerChris Wilder", "ManagerChris Hughton", "ManagerGraham Potter"))
+summary(lm6)
+
+ggsave(filename="SelectedManagers.png", width=11, height=7, dpi=1200)
+
+
+```
 
 
 
