@@ -1,0 +1,501 @@
+Rank,Name,Current club,Stints,Games,Career Elo ⌀,Total Elo +/-,Avg Elo +/-,Coach Rating
+1,Pep Guardiola,Man City,3,735,2006,+356,+119,2244
+2,Antonio Conte,Napoli,10,466,1763,+566,+57,2075
+3,Jürgen Klopp,none (since 2024-05-31),3,965,1788,+421,+140,2069
+4,Unai Emery,Aston Villa,9,885,1785,+490,+54,2057
+5,Luciano Spalletti,none (since 2023-06-30),12,852,1735,+590,+49,2055
+6,José Mourinho,Fenerbahçe,11,1015,1860,+345,+31,2048
+7,Zinédine Zidane,none (since 2021-06-30),2,236,1971,+67,+34,2022
+8,Diego Simeone,Atlético,2,629,1887,+157,+78,2004
+9,Carlo Ancelotti,Real Madrid,11,1189,1872,+215,+20,1990
+10,Manuel Pellegrini,Betis,6,777,1799,+307,+51,1978
+11,Ralf Rangnick,none (since 2022-06-30),9,485,1626,+625,+69,1973
+12,Claudio Ranieri,none (since 2024-06-30),19,1143,1714,+460,+24,1956
+13,Felix Magath,none (since 2022-06-30),11,616,1711,+425,+39,1942
+14,Gian Piero Gasperini,Atalanta,8,737,1660,+488,+61,1934
+15,Xavi,none (since 2024-06-30),1,128,1876,+53,+53,1929
+16,Edin Terzić,none (since 2024-06-13),2,116,1835,+97,+49,1908
+17,Jorge Jesus,none (since 2023-06-30),12,797,1628,+512,+43,1905
+18,Luis Enrique,Paris SG,5,315,1761,+234,+47,1901
+19,Julian Nagelsmann,none (since 2023-03-23),3,293,1816,+125,+42,1900
+20,Marcelino,Villarreal,12,650,1719,+328,+27,1897
+21,Thomas Tuchel,none (since 2024-06-30),5,511,1812,+140,+28,1896
+22,Ernesto Valverde,Bilbao,9,727,1796,+158,+18,1883
+23,Rúben Amorim,Sporting,2,193,1728,+206,+103,1883
+24,Arne Slot,Liverpool,3,196,1703,+256,+85,1874
+25,Laurent Blanc,none (since 2023-09-11),3,316,1802,+104,+35,1872
+26,Marco Silva,Fulham,7,368,1644,+395,+56,1870
+27,Christophe Galtier,none (since 2023-07-04),4,545,1669,+321,+80,1869
+28,Marco Rose,RB Leipzig,4,305,1781,+139,+35,1868
+29,Javier Aguirre,none (since 2024-05-22),6,485,1718,+248,+41,1863
+30,Mauricio Pochettino,none (since 2024-05-21),5,566,1779,+138,+28,1862
+31,Ralph Hasenhüttl,Wolfsburg,6,367,1600,+443,+74,1858
+32,Eddie Howe,Newcastle,3,470,1634,+331,+110,1855
+33,Rafa Benítez,none (since 2024-03-12),14,1036,1754,+187,+13,1854
+34,Lucien Favre,none (since 2023-01-09),8,748,1612,+422,+53,1849
+35,Sam Allardyce,none (since 2023-06-30),9,686,1656,+346,+38,1849
+36,Nuno Espírito Santo,Forest,6,377,1682,+282,+47,1846
+37,Bruno Génésio,Lille,3,292,1711,+201,+67,1845
+38,Imanol Alguacil,Real Sociedad,2,254,1759,+114,+57,1844
+39,Maurizio Sarri,none (since 2024-03-13),8,524,1707,+226,+28,1835
+40,Simone Inzaghi,Inter,3,376,1786,+71,+24,1833
+41,Adi Hütter,Monaco,6,407,1616,+367,+61,1830
+42,Yuriy Semin,none (since 2021-09-24),10,1090,1554,+499,+50,1828
+43,Tony Pulis,none (since 2020-12-28),8,699,1574,+437,+55,1820
+44,José Luis Mendilíbar,Ολυμπιακός,9,584,1687,+238,+26,1820
+45,Stefano Pioli,none (since 2024-05-26),14,811,1634,+344,+25,1818
+46,André Villas-Boas,none (since 2021-02-02),6,325,1759,+95,+16,1814
+47,Edoardo Reja,none (since 2023-04-17),14,551,1586,+423,+30,1812
+48,Sebastian Hoeneß,Stuttgart,2,119,1714,+131,+65,1812
+49,Huub Stevens,none (since 2020-12-26),15,825,1656,+276,+18,1803
+50,Roger Schmidt,Benfica,5,435,1713,+150,+30,1803
+51,Walter Mazzarri,none (since 2024-02-18),9,643,1650,+272,+30,1801
+52,Sérgio Conceição,none (since 2024-06-30),6,452,1686,+192,+32,1798
+53,Sean Dyche,Everton,3,493,1629,+250,+83,1796
+54,Siniša Mihajlović,none (since 2022-09-06),7,381,1617,+310,+44,1794
+55,David Moyes,none (since 2024-06-30),7,895,1697,+170,+24,1794
+56,Ron Jans,Utrecht,6,640,1483,+528,+88,1791
+57,Diego Martínez,none (since 2023-12-05),6,360,1617,+297,+49,1790
+58,Kurban Berdiyev,Turan,6,511,1567,+381,+64,1790
+59,Philippe Montanier,none (since 2023-06-30),8,523,1534,+452,+56,1788
+60,Artur Jorge,none (since 2024-04-02),13,658,1677,+198,+15,1783
+61,Brendan Rodgers,Celtic,7,646,1688,+167,+24,1783
+62,Erik ten Hag,Man United,4,388,1673,+169,+42,1779
+63,Franck Haise,Nice,3,162,1641,+207,+69,1779
+64,Thomas Frank,Brentford,2,343,1588,+253,+126,1778
+65,Jorge Sampaoli,none (since 2023-03-20),3,138,1735,+63,+21,1777
+66,Dan Petrescu,CFR Cluj,10,476,1502,+498,+50,1776
+67,Fatih Terim,none (since 2024-05-17),8,602,1609,+296,+37,1776
+68,Steven Gerrard,none (since 2022-10-20),2,209,1621,+205,+103,1775
+69,Rudi García,none (since 2023-11-13),8,714,1673,+180,+23,1775
+70,Lopetegui,West Ham,6,270,1806,-59,-10,1772
+71,Massimiliano Allegri,none (since 2024-05-17),5,628,1822,-85,-17,1771
+72,László Bölöni,none (since 2024-07-03),11,801,1579,+351,+32,1771
+73,Niko Kovač,none (since 2024-03-17),4,261,1724,+72,+18,1769
+74,Oliver Glasner,Crystal Palace,5,292,1602,+276,+55,1768
+75,Quique Sánchez Flores,none (since 2024-06-30),10,472,1720,+86,+9,1767
+76,Serhiy Rebrov,none (since 2021-06-30),2,232,1613,+200,+100,1763
+77,Dieter Hecking,none (since 2023-06-01),8,637,1620,+253,+32,1762
+78,Jindřich Trpišovský,Slavia Praha,2,402,1598,+219,+109,1762
+79,Paulo Fonseca,Milan,8,448,1696,+116,+15,1761
+80,Steve Bruce,none (since 2022-10-09),11,908,1595,+303,+28,1761
+81,Antoine Kombouaré,Nantes,9,681,1578,+327,+36,1760
+82,Mircea Lucescu,none (since 2023-11-03),13,1325,1688,+132,+10,1759
+83,Ange Postecoglou,Tottenham,2,136,1685,+97,+49,1758
+84,José Bordalás,Getafe,8,570,1641,+208,+26,1758
+85,Christian Streich,none (since 2024-06-30),1,451,1668,+89,+89,1757
+86,Urs Fischer,none (since 2023-11-15),4,474,1609,+233,+58,1755
+87,Bruno Lage,none (since 2022-10-02),2,108,1763,-24,-12,1745
+88,Marcelo Bielsa,none (since 2022-02-27),5,319,1666,+130,+26,1743
+89,Vincenzo Montella,none (since 2023-06-30),8,395,1625,+208,+26,1742
+90,Andoni Iraola,Bournemouth,4,216,1590,+240,+60,1740
+91,Pavel Vrba,none (since 2022-10-10),8,472,1528,+375,+47,1740
+92,Christian Gross,none (since 2021-02-27),6,733,1610,+215,+36,1735
+93,Roy Hodgson,none (since 2024-02-18),15,931,1582,+276,+18,1730
+94,Cesare Prandelli,none (since 2021-03-23),11,528,1692,+69,+6,1729
+95,Gerardo Seoane,Gladbach,5,243,1675,+87,+17,1728
+96,Éric Roy,Brest,2,119,1617,+147,+73,1727
+97,Ronald Koeman,none (since 2021-10-27),10,657,1707,+35,+4,1726
+98,Ivan Jurić,none (since 2024-06-30),6,283,1587,+238,+40,1726
+99,Sergio González,none (since 2024-01-20),3,256,1647,+114,+38,1724
+100,Steve Cooper,Leicester,3,195,1586,+205,+68,1723
+101,Sergey Semak,Зенит,3,261,1659,+93,+31,1720
+102,Massimo Carrera,Ascoli,4,143,1638,+129,+32,1718
+103,Thiago Motta,Juventus,4,119,1633,+135,+34,1718
+104,Rıza Çalımbay,none (since 2023-12-21),16,673,1465,+473,+30,1717
+105,Fran Escribá,none (since 2023-11-19),6,303,1641,+119,+20,1710
+106,Paul Le Guen,none (since 2022-06-19),6,513,1622,+149,+25,1709
+107,Rubi,Almería,9,339,1637,+130,+14,1709
+108,Dick Advocaat,none (since 2021-06-30),13,789,1626,+151,+12,1708
+109,Thomas Schaaf,none (since 2021-05-30),4,624,1739,-51,-13,1707
+110,Frédéric Antonetti,none (since 2023-06-30),9,787,1618,+156,+17,1704
+111,Stanimir Stoilov,Göztepe,7,373,1457,+430,+61,1703
+112,Pablo Machín,Απόλλων Λεμεσός,8,438,1610,+163,+20,1701
+113,Luigi Delneri,none (since 2020-10-06),14,483,1619,+154,+11,1701
+114,Mauricio Pellegrino,none (since 2024-06-30),5,151,1673,+46,+9,1701
+115,Pellegrino Matarazzo,Hoffenheim,2,143,1631,+92,+46,1700
+116,Xabi Alonso,Leverkusen,2,127,1586,+152,+76,1700
+117,Jesse Marsch,none (since 2023-02-06),3,133,1748,-72,-24,1700
+118,Neil Warnock,none (since 2024-03-10),15,1040,1500,+372,+25,1699
+119,Michel Der Zakarian,Montpellier,7,603,1559,+242,+35,1698
+120,Víctor Fernández,Zaragoza,11,758,1692,+9,+1,1696
+121,Pedro Martins,none (since 2022-08-01),4,461,1584,+177,+44,1695
+122,Christian Gourcuff,none (since 2020-12-08),5,779,1571,+203,+41,1692
+123,Pablo Correa,Nancy,5,559,1561,+218,+44,1692
+124,Javier Calleja,Oviedo,5,211,1685,+11,+2,1692
+125,Răzvan Lucescu,ΠΑΟΚ,8,562,1485,+367,+46,1691
+126,Vincenzo Italiano,Bologna,4,228,1566,+197,+49,1689
+127,Christophe Pélissier,Auxerre,3,285,1490,+295,+98,1687
+128,Abelardo,Cartagena,6,223,1645,+71,+12,1687
+129,Peter Stöger,none (since 2021-12-13),6,309,1618,+115,+19,1685
+130,Yuriy Vernydub,none (since 2022-02-25),3,286,1473,+312,+104,1681
+131,Abdullah Avcı,Trabzonspor,6,506,1519,+274,+46,1679
+132,Luis García,Alavés,7,433,1628,+86,+12,1677
+133,Qurban Qurbanov,Qarabağ,2,168,1395,+373,+187,1675
+134,René Girard,none (since 2021-06-30),5,321,1607,+112,+22,1674
+135,Davide Ballardini,none (since 2024-06-02),14,302,1587,+160,+11,1673
+136,Christian Ilzer,Sturm Graz,4,229,1504,+269,+67,1672
+137,Jagoba Arrasate,Mallorca,4,425,1645,+41,+10,1670
+138,André Breitenreiter,none (since 2024-05-10),6,239,1586,+145,+24,1670
+139,Ole Werner,Werder,2,157,1568,+135,+67,1669
+140,Chris Wilder,Sheffield United,4,236,1560,+174,+43,1669
+141,Lucas Alcaraz,none (since 2020-10-13),14,615,1617,+97,+7,1669
+142,Míchel,Girona,11,619,1653,+27,+2,1668
+143,Thierry Laurey,Martigues,6,427,1475,+330,+55,1668
+144,Jean-Marc Furlan,none (since 2023-11-07),7,649,1499,+286,+41,1662
+145,Şenol Güneş,none (since 2023-10-06),11,704,1532,+238,+22,1661
+146,Roberto De Zerbi,Marseille,6,262,1652,+15,+2,1661
+147,Markus Gisdol,none (since 2024-06-30),5,229,1604,+95,+19,1661
+148,Jess Thorup,Augsburg,8,394,1530,+231,+29,1660
+149,Okan Buruk,Galatasaray,7,304,1531,+222,+32,1658
+150,Philippe Clement,Rangers,6,306,1660,-3,0,1658
+151,Pepe Mel,none (since 2024-06-30),14,634,1597,+109,+8,1656
+152,Julien Stéphan,Rennes,3,177,1643,+18,+6,1655
+153,Dušan Uhrin,none (since 2022-06-30),26,792,1453,+388,+15,1654
+154,Domenico Tedesco,none (since 2022-09-06),4,158,1640,+21,+5,1653
+155,Fernando Vázquez,none (since 2021-01-11),11,544,1671,-33,-3,1653
+156,Brian Priske,Feyenoord,4,209,1573,+127,+32,1652
+157,Jesualdo Ferreira,none (since 2021-06-30),10,518,1608,+78,+8,1651
+158,Óscar,Leuven,10,295,1584,+120,+12,1651
+159,Dimitar Dimitrov,none (since 2023-06-30),14,544,1315,+623,+44,1648
+160,Zoran Mamić,none (since 2021-03-15),4,162,1581,+106,+27,1648
+161,Karanka,none (since 2023-06-30),5,276,1531,+194,+39,1647
+162,Gaizka Garitano,none (since 2024-03-13),6,298,1631,+25,+4,1646
+163,Delio Rossi,none (since 2020-12-22),15,607,1612,+62,+4,1645
+164,Manolo Jiménez,none (since 2021-06-30),14,479,1574,+132,+9,1645
+165,Patrick Vieira,none (since 2024-07-18),3,181,1651,-12,-4,1643
+166,Laurentiu Reghecampf,none (since 2023-09-19),8,245,1478,+292,+37,1642
+167,Marcel Rapp,Holstein,3,138,1563,+118,+39,1642
+168,Frank Lampard,none (since 2023-06-30),4,169,1722,-129,-32,1641
+169,Dean Smith,none (since 2023-06-30),4,315,1581,+95,+24,1641
+170,Nenad Bjelica,none (since 2024-05-06),8,412,1484,+277,+35,1640
+171,Chris Hughton,none (since 2021-09-16),7,464,1595,+76,+11,1639
+172,Vladimir Ivić,none (since 2024-03-13),5,212,1538,+167,+33,1638
+173,García Pimienta,Sevilla,2,101,1580,+77,+39,1638
+174,Bruno Labbadia,none (since 2023-04-03),8,356,1671,-59,-7,1638
+175,Anquela,none (since 2021-09-18),9,402,1541,+173,+19,1637
+176,Graham Potter,none (since 2023-04-02),4,280,1480,+247,+62,1634
+177,Cosmin Contra,none (since 2020-12-02),6,132,1530,+179,+30,1634
+178,Marcel Lička,Динамо Москва,3,104,1407,+337,+112,1632
+179,Steffen Baumgart,Hamburg,3,209,1547,+123,+41,1629
+180,Paco López,Cadiz,4,180,1655,-42,-11,1628
+181,Thomas Reis,Samsunspor,3,135,1538,+135,+45,1628
+182,Nigel Pearson,none (since 2023-10-28),11,450,1493,+247,+22,1628
+183,Friedhelm Funkel,none (since 2024-06-30),12,850,1575,+96,+8,1627
+184,Slaven Bilić,none (since 2023-03-06),6,341,1620,+10,+2,1627
+185,Fernando Santos,none (since 2024-04-12),10,688,1526,+179,+18,1624
+186,Juan Martínez,none (since 2022-06-30),7,366,1597,+46,+7,1623
+187,Stéphane Moulin,none (since 2023-06-30),2,446,1509,+151,+75,1622
+188,Uwe Rösler,Aarhus,8,405,1490,+234,+29,1621
+189,Raphaël Wicky,none (since 2024-03-03),2,124,1646,-33,-16,1621
+190,Juan Garrido,none (since 2021-05-21),5,181,1612,+10,+2,1618
+191,Giovanni van Bronckhorst,Beşiktaş,3,216,1595,+32,+11,1617
+192,Quique Setién,none (since 2023-09-05),7,383,1620,-6,-1,1616
+193,Moreno,Osasuna,9,330,1558,+104,+12,1616
+194,Miodrag Božović,none (since 2022-06-30),11,451,1456,+293,+27,1616
+195,Víctor,Olimpija Ljubljana,6,122,1614,+1,+0,1615
+196,Marco Baroni,Lazio,9,318,1483,+237,+26,1614
+197,Davide Nicola,Cagliari,11,284,1503,+204,+19,1614
+198,Scott Parker,Burnley,4,162,1604,+15,+4,1614
+199,Claudio,Celta,4,165,1533,+129,+32,1614
+200,Rui Vitória,none (since 2021-12-15),4,338,1634,-33,-8,1614
+201,Vincent Kompany,Bayern,3,198,1591,+30,+10,1611
+202,Igor Tudor,none (since 2024-06-05),10,288,1528,+150,+15,1610
+203,Abel Ferreira,none (since 2020-10-30),3,138,1619,-13,-4,1610
+204,Vladan Milojević,Crvena Zvezda,6,284,1389,+378,+63,1610
+205,Slaviša Jokanović,none (since 2023-05-14),8,326,1519,+157,+20,1607
+206,Dejan Stanković,Спартак Москва,4,189,1601,+7,+2,1606
+207,Tayfun Korkut,none (since 2022-03-13),5,109,1632,-45,-9,1605
+208,Peter Maes,Willem II,6,452,1437,+286,+48,1604
+209,Ståle Solbakken,none (since 2020-10-10),5,670,1542,+102,+20,1603
+210,Daniel Farke,Leeds,4,273,1602,+3,+1,1603
+211,Mark van Bommel,none (since 2024-06-30),3,177,1653,-77,-26,1602
+212,Daniel Thioune,Düsseldorf,3,149,1493,+163,+54,1601
+213,Giuseppe Iachini,none (since 2024-04-14),14,488,1552,+90,+6,1600
+214,Mike Büskens,none (since 2022-06-30),7,181,1590,+18,+3,1600
+215,Ivan Jovanović,none (since 2023-12-25),5,198,1486,+187,+37,1599
+216,Carlos Corberán,West Brom,3,187,1514,+126,+42,1598
+217,Francisco,none (since 2024-02-13),10,288,1594,+6,+1,1597
+218,Rashid Rakhimov,Рубин,8,379,1506,+163,+20,1597
+219,John van den Brom,Vitesse,8,517,1532,+114,+14,1596
+220,Besnik Hasi,Mechelen,4,167,1578,+28,+7,1596
+221,Marcel Koller,none (since 2020-08-31),5,442,1593,+3,+1,1595
+222,Mark Robins,Coventry,3,339,1470,+186,+62,1594
+223,Ersun Yanal,none (since 2023-04-19),14,558,1481,+210,+15,1594
+224,Vítor Pereira,none (since 2021-12-20),6,201,1648,-97,-16,1591
+225,Leonardo Semplici,none (since 2023-06-30),3,175,1519,+108,+36,1591
+226,Pacheta,none (since 2023-11-10),6,235,1526,+109,+18,1589
+227,Marek Papszun,Rakow,2,153,1394,+261,+130,1589
+228,Fred Rutten,none (since 2023-06-30),10,425,1601,-22,-2,1589
+229,Frank Vercauteren,none (since 2021-06-30),8,303,1543,+81,+10,1589
+230,Serse Cosmi,none (since 2022-11-13),13,492,1552,+66,+5,1587
+231,Georgios Donis,none (since 2020-12-23),7,253,1477,+193,+28,1587
+232,José Ramón Sandoval,none (since 2024-06-30),9,278,1584,+4,+0,1586
+233,Pál Dárdai,none (since 2024-06-30),4,243,1606,-33,-8,1585
+234,Erik Hamrén,none (since 2023-03-19),6,505,1462,+211,+35,1585
+235,Valeriy Karpin,Ростов,5,352,1578,+11,+2,1585
+236,Pascal Jansen,Ferencváros,2,162,1644,-79,-40,1585
+237,Aurelio Andreazzoli,none (since 2024-01-14),7,134,1560,+42,+6,1584
+238,Jos Luhukay,none (since 2022-05-29),9,383,1528,+101,+11,1584
+239,Garry Monk,Cambridge,6,246,1545,+64,+11,1583
+240,Sandro Schwarz,none (since 2023-04-15),3,156,1580,+5,+2,1583
+241,Eusebio Di Francesco,Venezia,9,369,1627,-82,-9,1582
+242,Andrea Sottil,none (since 2023-10-24),3,110,1512,+104,+35,1581
+243,Paulo Sousa,none (since 2023-10-09),9,387,1585,-8,-1,1581
+244,Asier Garitano,none (since 2024-06-30),7,303,1603,-40,-6,1580
+245,Dirk Schuster,none (since 2023-11-30),5,234,1485,+159,+32,1580
+246,Álvaro Cervera,none (since 2023-09-21),7,428,1547,+56,+8,1579
+247,Peter Bosz,PSV,10,565,1589,-21,-2,1577
+248,Ertuğrul Sağlam,Kocaelispor,8,395,1534,+76,+10,1576
+249,Andrea Pirlo,Sampdoria,3,121,1585,-15,-5,1576
+250,Erling Moe,Molde,2,243,1546,+36,+18,1573
+251,Wouter Vrancken,Gent,3,208,1495,+116,+39,1572
+252,Uwe Neuhaus,none (since 2021-03-01),4,329,1470,+163,+41,1571
+253,Tony Mowbray,none (since 2024-05-21),8,669,1498,+129,+16,1571
+254,Stanislav Cherchesov,none (since 2023-07-19),7,323,1547,+37,+5,1568
+255,Jocelyn Gourvennec,none (since 2024-03-16),5,343,1557,+19,+4,1568
+256,Gary Rowett,none (since 2024-06-05),5,373,1506,+104,+21,1568
+257,Pasquale Marino,none (since 2024-02-05),14,440,1546,+40,+3,1568
+258,Karel Jarolím,none (since 2022-02-22),8,511,1527,+70,+9,1567
+259,Ole Gunnar Solskjær,none (since 2021-11-21),4,385,1582,-25,-6,1566
+260,Ivaylo Petev,none (since 2024-04-10),6,171,1359,+355,+59,1566
+261,Oleg Kononov,Торпедо Москва,8,309,1501,+116,+14,1566
+262,Ivan Leko,Standard,6,220,1502,+109,+18,1566
+263,Kosta Runjaic,Udinese,6,351,1432,+228,+38,1565
+264,Pascal Gastien,none (since 2024-06-30),3,347,1462,+152,+51,1563
+265,Vítězslav Lavička,none (since 2021-03-21),6,379,1550,+24,+4,1563
+266,Markus Anfang,Lautern,5,117,1499,+107,+21,1563
+267,Viktor Goncharenko,none (since 2024-05-29),7,513,1529,+58,+8,1562
+268,Edward Iordanescu,none (since 2021-11-14),7,184,1432,+227,+32,1561
+269,Igor Cherevtchenko,Факел Воронеж,6,133,1504,+98,+16,1561
+270,Neil Lennon,Rapid Bucuresti,6,447,1478,+140,+23,1560
+271,Gracia,none (since 2023-05-03),11,368,1615,-101,-9,1560
+272,Barak Bakhar,מכבי חיפה,5,470,1497,+103,+21,1559
+273,Florian Kohfeldt,none (since 2024-03-16),3,186,1619,-90,-30,1559
+274,Heiko Herrlich,none (since 2021-04-25),4,119,1575,-27,-7,1559
+275,Leonid Slutskiy,none (since 2022-11-15),7,582,1572,-25,-4,1558
+276,Tim Walter,Hull,4,146,1557,+1,+0,1558
+277,David Guion,none (since 2024-08-05),5,246,1533,+40,+8,1557
+278,Stefano Colantuono,none (since 2024-06-19),13,539,1555,+3,+0,1557
+279,Etxeberria,Eibar,3,124,1524,+49,+16,1556
+280,Rolando Maran,Brescia,11,490,1542,+23,+2,1555
+281,Patrice Garande,none (since 2022-05-15),3,300,1517,+54,+18,1553
+282,Carlos Carvalhal,Braga,18,530,1513,+73,+4,1552
+283,Mark Warburton,none (since 2022-06-30),4,244,1418,+214,+54,1551
+284,Ran Ben Shimon,none (since 2023-06-30),8,383,1332,+388,+49,1550
+285,David Wagner,none (since 2024-05-17),4,280,1554,-8,-2,1549
+286,Hein Vanhaezebrouck,none (since 2024-06-30),6,602,1512,+63,+10,1549
+287,Andrea Mandorlini,none (since 2024-01-23),8,370,1522,+46,+6,1548
+288,René Weiler,none (since 2024-06-30),6,233,1501,+82,+14,1548
+289,Joseph Oosting,Twente,3,115,1496,+78,+26,1548
+290,Achim Beierlorzer,none (since 2021-12-08),5,119,1495,+88,+18,1548
+291,Filippo Inzaghi,Pisa,8,268,1504,+78,+10,1547
+292,Alain Casanova,none (since 2022-06-30),4,370,1590,-69,-17,1547
+293,İsmail Kartal,none (since 2024-05-31),8,186,1507,+68,+9,1545
+294,Francesco Farioli,Ajax,4,108,1536,+14,+4,1545
+295,Carrión,Las Palmas,6,226,1507,+65,+11,1545
+296,Natxo González,none (since 2022-04-02),6,178,1501,+73,+12,1544
+297,Martí,none (since 2022-05-02),5,169,1574,-50,-10,1544
+298,Paolo Zanetti,Verona,4,141,1497,+75,+19,1544
+299,Heiko Vogel,none (since 2023-10-29),4,104,1604,-99,-25,1541
+300,Olivier Pantaloni,Lorient,5,578,1445,+161,+32,1541
+301,Marius Şumudică,none (since 2024-03-06),11,354,1428,+207,+19,1541
+302,Raymond Domenech,none (since 2021-02-10),2,163,1542,-1,-1,1541
+303,Fabio Pecchia,Parma,4,228,1487,+83,+21,1539
+304,José Anigo,none (since 2023-06-30),6,122,1532,+11,+2,1539
+305,Valérien Ismaël,none (since 2024-03-09),8,200,1567,-52,-6,1538
+306,Lito Vidigal,none (since 2022-01-05),11,213,1455,+153,+14,1538
+307,Eugenio Corini,none (since 2024-04-02),10,278,1481,+102,+10,1537
+308,Aleksandar Stanojević,Partizan,6,210,1512,+42,+7,1536
+309,Łukasz Kwasniok,Paderborn,2,107,1516,+26,+13,1536
+310,Gennaro Gattuso,Hajduk,10,259,1605,-127,-13,1536
+311,Ramis,none (since 2024-03-11),4,229,1535,+2,+0,1536
+312,Thorsten Fink,Genk,7,392,1542,-13,-2,1535
+313,Stefan Leitl,Hannover,3,224,1481,+81,+27,1535
+314,Bolo,Burgos,3,181,1493,+63,+21,1535
+315,Sabri Lamouchi,none (since 2023-06-01),3,114,1548,-20,-7,1534
+316,Nanne Bergstrand,none (since 2020-12-31),7,599,1390,+253,+36,1534
+317,Russell Martin,Southampton,2,143,1554,-26,-13,1534
+318,Rubén Baraja,Valencia,6,186,1610,-131,-22,1533
+319,Slaviša Stojanović,none (since 2021-05-23),6,312,1327,+354,+59,1533
+320,Thomas Thomasberg,Midtjylland,4,298,1439,+149,+37,1533
+321,Giovanni Stroppa,Cremonese,6,237,1457,+129,+21,1533
+322,Roberto D'Aversa,Empoli,6,258,1502,+52,+9,1533
+323,Felipe,none (since 2024-06-30),4,104,1590,-92,-23,1532
+324,Emre Belözoğlu,none (since 2024-05-31),3,124,1492,+60,+20,1532
+325,Francky Dury,none (since 2021-12-16),4,764,1436,+154,+39,1532
+326,Olivier Dall'Oglio,Saint-Étienne,4,385,1526,+10,+3,1532
+327,Claude Puel,none (since 2021-12-05),7,833,1689,-276,-39,1532
+328,Sergi Barjuán,none (since 2021-11-07),4,113,1554,-36,-9,1532
+329,Markus Weinzierl,none (since 2023-02-19),6,261,1566,-59,-10,1532
+330,Dorinel Munteanu,Oțelul Galați,11,291,1389,+261,+24,1532
+331,Silvio Baldini,none (since 2022-10-16),10,348,1570,-70,-7,1531
+332,Peter Zeidler,Bochum,6,347,1466,+111,+19,1531
+333,Hannes Wolf,none (since 2021-06-30),4,101,1589,-96,-24,1529
+334,José Alberto López,Santander,4,180,1508,+33,+8,1529
+335,Jean-Louis Gasset,none (since 2024-06-30),7,260,1589,-105,-15,1528
+336,Alessio Dionisi,Palermo,4,179,1561,-52,-13,1528
+337,Yuriy Maksimov,none (since 2022-06-30),4,181,1383,+233,+58,1528
+338,Ronny Deila,none (since 2024-03-17),5,467,1415,+187,+37,1528
+339,Gallego,ΑΠΟΕΛ,5,115,1554,-45,-9,1527
+340,André Schubert,none (since 2021-12-07),5,181,1565,-65,-13,1526
+341,Marco Balbul,נתניה,7,194,1364,+282,+40,1525
+342,Hamza Hamzaoğlu,none (since 2022-02-22),9,232,1454,+128,+14,1525
+343,Ante Šimundža,Maribor,4,321,1350,+279,+70,1524
+344,Vladimir Fedotov,none (since 2024-06-03),8,422,1484,+71,+9,1523
+345,Fabio Grosso,Sassuolo,7,196,1468,+97,+14,1523
+346,Zoran Barišić,none (since 2023-11-14),5,212,1509,+24,+5,1523
+347,Robin Dutt,none (since 2023-03-05),5,321,1564,-70,-14,1523
+348,Julián Calero,Levante,3,121,1484,+56,+19,1521
+349,Georgios Paraschos,none (since 2022-01-06),20,500,1340,+344,+17,1521
+350,Lee Johnson,none (since 2023-08-27),2,242,1440,+108,+54,1520
+351,Fabio Liverani,none (since 2024-03-18),6,132,1471,+85,+14,1520
+352,Uli Forte,Xamax,7,233,1450,+123,+18,1520
+353,Waldemar Fornalik,Zagłębie,6,554,1360,+273,+46,1519
+354,Derek McInnes,Kilmarnock,4,559,1345,+275,+69,1516
+355,Alfred Schreuder,none (since 2023-01-26),5,117,1650,-225,-45,1516
+356,Pêpa,none (since 2022-06-30),4,195,1421,+151,+38,1515
+357,Henrik Rydström,Malmö,4,190,1350,+264,+66,1515
+358,Yves Vanderhaeghe,none (since 2022-10-31),6,301,1463,+89,+15,1515
+359,Mick McCarthy,none (since 2023-04-08),7,861,1527,-21,-3,1515
+360,Phillip Cocu,none (since 2023-11-11),5,329,1613,-164,-33,1514
+361,Kjetil Rekdal,Aalesund,9,495,1369,+258,+29,1512
+362,Ferario Spasov,none (since 2020-10-06),9,289,1377,+240,+27,1511
+363,Ilhan Palut,Rizespor,3,160,1413,+146,+49,1511
+364,Pierpaolo Bisoli,Modena,10,275,1431,+144,+14,1510
+365,Jim Magilton,Cliftonville,3,158,1491,+27,+9,1509
+366,Sergej Jakirović,Dinamo Zagreb,5,155,1362,+245,+49,1509
+367,Eirik Horneland,Brann,3,186,1379,+195,+65,1509
+368,Marco Giampaolo,none (since 2022-10-02),11,321,1585,-143,-13,1507
+369,Tolunay Kafkas,none (since 2024-05-31),8,292,1498,+16,+2,1507
+370,José Luis Oltra,none (since 2024-06-30),13,494,1572,-122,-9,1507
+371,Dietmar Kühbauer,Wolfsberg,5,330,1455,+87,+17,1507
+372,Fran Fernández,Murcia,6,151,1458,+82,+14,1506
+373,Franco Foda,none (since 2022-09-21),5,452,1496,+16,+3,1506
+374,Per-Mathias Høgmo,none (since 2023-12-31),7,374,1368,+237,+34,1504
+375,Pascal Dupraz,none (since 2023-06-30),5,259,1521,-32,-6,1502
+376,Vladimir Petković,none (since 2022-02-07),6,279,1512,-17,-3,1502
+377,Frank Kramer,none (since 2022-10-19),5,136,1567,-109,-22,1502
+378,René Hake,none (since 2024-07-06),3,199,1462,+59,+20,1502
+379,Neil Harris,Millwall,4,186,1460,+66,+17,1502
+380,Igor Shalimov,none (since 2022-08-08),3,111,1544,-64,-21,1502
+381,Luca Gotti,Lecce,7,172,1542,-71,-10,1501
+382,Ricardo Soares,none (since 2023-06-08),5,128,1445,+93,+19,1501
+383,Viktor Skrypnyk,Metalist 1925,5,209,1469,+51,+10,1500
+384,Torsten Lieberknecht,Darmstadt,3,371,1502,-5,-2,1499
+385,Paul Lambert,none (since 2021-02-28),7,319,1505,-12,-2,1498
+386,Markus Kauczinski,none (since 2024-04-28),8,222,1450,+85,+11,1498
+387,Julio Velázquez,none (since 2024-03-11),12,310,1508,-20,-2,1498
+388,Nenad Lalatović,none (since 2023-08-27),11,312,1302,+358,+33,1497
+389,Yılmaz Vural,none (since 2021-05-09),20,490,1350,+280,+14,1497
+390,Jean-Louis Garcia,none (since 2024-06-30),7,397,1443,+94,+13,1497
+391,Miguel Álvarez,Villarreal B,5,177,1502,-10,-2,1496
+392,Ivo Vieira,none (since 2022-11-02),7,196,1485,+18,+3,1496
+393,Václav Kotal,none (since 2024-02-27),5,219,1380,+193,+39,1496
+394,Giorgio Contini,none (since 2023-06-30),5,257,1393,+171,+34,1495
+395,Nathan Jones,Charlton,5,167,1505,-16,-3,1495
+396,Luís Castro,Dunkerque,8,256,1522,-48,-6,1495
+397,Mesut Bakkal,none (since 2021-03-21),15,299,1457,+71,+5,1495
+398,Gheorghe Hagi,Farul,7,324,1476,+33,+5,1494
+399,Thomas Letsch,none (since 2024-04-08),5,188,1544,-88,-18,1492
+400,Paul Clement,none (since 2021-02-01),4,120,1499,-14,-4,1490
+401,Jacob Friis,none (since 2023-11-07),2,125,1409,+108,+54,1489
+402,Paul Heckingbottom,none (since 2023-12-04),5,215,1494,-8,-2,1489
+403,Rubén Albés,Gijón,4,152,1451,+59,+15,1488
+404,Ricardo Moniz,Zürich,11,189,1393,+174,+16,1488
+405,Magnus Haglund,Halmstad,4,521,1377,+177,+44,1487
+406,Bülent Uygun,Sivasspor,11,248,1469,+32,+3,1487
+407,Martin Svědík,none (since 2024-06-30),4,246,1408,+124,+31,1486
+408,Robert Klauß,Rapid Wien,2,105,1473,+18,+9,1486
+409,Jakob Michelsen,Ham-Kam,4,264,1352,+213,+53,1486
+410,Petr Rada,Dukla,11,466,1454,+56,+5,1484
+411,Sergey Tashuev,none (since 2024-04-26),6,158,1436,+82,+14,1484
+412,Sá Pinto,none (since 2024-06-30),13,249,1473,+21,+2,1484
+413,Bo Henriksen,Mainz,4,253,1393,+145,+36,1484
+414,Paolo Tramezzani,Istra 1961,9,141,1439,+80,+9,1483
+415,Timo Schultz,none (since 2024-06-30),3,112,1498,-23,-8,1483
+416,Gheorghe Mulţescu,none (since 2021-04-13),23,447,1376,+204,+9,1483
+417,Mustafa Denizli,none (since 2022-01-13),9,425,1491,-17,-2,1482
+418,Alexander Zorniger,Fürth,5,208,1480,+2,+0,1482
+419,Robbie Neilson,none (since 2023-04-09),2,134,1307,+233,+116,1482
+420,Manuel Machado,none (since 2021-06-30),13,469,1511,-56,-4,1481
+421,Ioan Sabău,Universitatea Cluj,6,168,1355,+217,+36,1481
+422,Luca D'Angelo,Spezia,3,177,1433,+72,+24,1480
+423,Roman Grygorchuk,Neftçi,11,300,1291,+346,+31,1480
+424,João Pedro,none (since 2024-03-19),3,120,1465,+20,+7,1478
+425,Oleksandr Ryabokon,none (since 2022-06-30),3,193,1380,+146,+49,1478
+426,Roberto Venturato,none (since 2022-10-08),2,239,1438,+52,+26,1477
+427,Henk Fraser,Waalwijk,5,294,1420,+96,+19,1477
+428,Roberto Breda,none (since 2024-06-30),12,300,1410,+123,+10,1477
+429,Alan Pardew,none (since 2023-02-05),10,570,1585,-198,-20,1476
+430,Edward Sturing,none (since 2024-06-30),6,176,1504,-48,-8,1475
+431,Marc Brys,none (since 2023-10-12),6,366,1440,+59,+10,1475
+432,Augustin Chromý,none (since 2022-06-30),1,270,1388,+86,+86,1475
+433,Åge Hareide,none (since 2022-12-31),11,724,1362,+203,+18,1473
+434,Luka Elsner,Reims,7,283,1402,+124,+18,1473
+435,José Mota,Farense,11,460,1439,+61,+6,1473
+436,Liviu Ciobotariu,Botosani,10,231,1350,+222,+22,1473
+437,Erol Bulut,Cardiff,4,170,1441,+49,+12,1472
+438,Chris Coleman,none (since 2023-10-10),5,365,1532,-99,-20,1472
+439,Çağdaş Atan,Başakşehir,3,126,1463,+12,+4,1471
+440,Mehmet Özdilek,none (since 2020-11-30),10,301,1443,+49,+5,1470
+441,Elyaniv Barda,none (since 2024-06-30),2,103,1503,-45,-22,1470
+442,Kent Nielsen,Silkeborg,5,577,1384,+142,+28,1469
+443,Miroslav Koubek,Viktoria Plzeň,9,327,1413,+102,+11,1469
+444,Ilian Iliev,Черно море,6,496,1248,+378,+63,1468
+445,Jacek Magiera,Śląsk,3,135,1414,+80,+27,1468
+446,Fabrizio Castori,none (since 2024-03-12),15,649,1444,+44,+3,1467
+447,Fabio Celestini,Basel,5,215,1415,+88,+18,1467
+448,Václav Jílek,none (since 2024-02-25),4,200,1383,+134,+33,1467
+449,Massimo Rastelli,none (since 2021-10-16),6,231,1458,+15,+3,1466
+450,Pavel Hapal,Banik Ostrava,7,249,1427,+70,+10,1466
+451,Felice Mazzù,none (since 2024-03-20),4,331,1486,-32,-8,1466
+452,Aleksandr Tarkhanov,none (since 2021-04-09),10,450,1391,+137,+14,1466
+453,Leo Grozavu,none (since 2021-09-28),3,188,1364,+154,+51,1466
+454,Luis César,none (since 2021-04-19),11,456,1531,-121,-11,1465
+455,Omar Daf,Amiens,4,200,1386,+126,+32,1465
+456,Jean-Michel Cavalli,Prishtine,6,257,1495,-52,-9,1465
+457,Jonas De Roeck,Antwerp,4,100,1429,+55,+14,1464
+458,Jorge Costa,none (since 2021-08-30),10,172,1459,+8,+1,1464
+459,Cristiano Bergodi,none (since 2024-04-16),15,374,1403,+115,+8,1464
+460,Cristóbal Parralo,Ferrol,5,118,1499,-59,-12,1464
+461,Damir Čanadi,Velež Mostar,9,261,1415,+85,+9,1462
+462,Gerhard Kleppinger,none (since 2023-06-17),4,100,1512,-81,-20,1462
+463,Vladimir Vermezović,none (since 2024-02-20),4,125,1514,-85,-21,1461
+464,Maciej Skorża,none (since 2022-06-30),7,333,1458,+5,+1,1461
+465,Glen Riddersholm,none (since 2023-12-31),4,333,1395,+104,+26,1460
+466,Craig Levein,St Johnstone,5,443,1393,+110,+22,1459
+467,Luboš Kozel,Jablonec,5,295,1397,+104,+21,1459
+468,Vladimir Weiss,Slovan Bratislava,5,108,1377,+137,+27,1459
+469,Diego López,none (since 2020-12-07),6,134,1525,-113,-19,1459
+470,Flemming Pedersen,none (since 2023-01-06),1,127,1425,+34,+34,1459
+471,Guillermo Abascal,Granada,7,103,1484,-44,-6,1459
+472,Jacek Zieliński,Korona,16,506,1372,+163,+10,1459
+473,Marko Nikolić,ЦСКА,9,434,1354,+188,+21,1459
+474,Roberto Stellone,none (since 2023-04-10),7,160,1435,+40,+6,1458
+475,Glen De Boeck,none (since 2023-12-05),6,190,1422,+61,+10,1458
+476,John van 't Schip,none (since 2024-06-10),4,122,1478,-32,-8,1458
+477,Kemal Özdeş,none (since 2023-11-27),6,155,1446,+18,+3,1456
+478,Goran Tomić,none (since 2022-05-28),4,200,1401,+89,+22,1456
+479,Alex Neil,none (since 2023-12-09),5,361,1474,-31,-6,1455
+480,Zoran Zekić,FK Sarajevo,8,270,1334,+214,+27,1454
+481,Dag-Eilev Fagermo,none (since 2023-06-12),3,476,1379,+111,+37,1452
+482,Horst Hrubesch,none (since 2021-06-30),7,133,1503,-88,-13,1452
+483,Nikos Nioplias,none (since 2022-10-21),3,102,1429,+35,+12,1452
+484,Maurizio Jacobacci,none (since 2021-12-14),5,116,1411,+68,+14,1451
+485,Hikmet Karaman,none (since 2024-07-07),16,532,1419,+62,+4,1451
+486,Kenan Kocak,none (since 2021-06-30),2,132,1466,-19,-10,1451
+487,Jimmy Thelin,Aberdeen,3,264,1352,+149,+50,1451
+488,Ömer Erdoğan,none (since 2023-10-29),3,113,1409,+63,+21,1451
+489,Martí Cifuentes,QPR,4,180,1356,+151,+38,1451
+490,Czesław Michniewicz,none (since 2021-10-24),10,300,1363,+157,+16,1449
+491,Marinos Ouzounidis,none (since 2021-07-22),11,286,1436,+24,+2,1449
+492,Joan Carrillo,none (since 2023-03-06),7,140,1401,+84,+12,1449
+493,Jeff Saibene,none (since 2022-06-30),6,273,1419,+50,+8,1448
+494,Nigel Adkins,Tranmere,6,316,1419,+49,+8,1448
+495,Igor Jovićević,none (since 2023-06-30),4,107,1451,-9,-2,1445
+496,Bjarte Aarsheim,Viking,3,119,1414,+47,+16,1445
+497,Attilio Tesser,none (since 2023-06-30),12,420,1441,+6,+1,1444
+498,Leonid Kuchuk,none (since 2023-03-19),7,220,1355,+157,+22,1444
+499,Abel Braga,none (since 2021-08-31),5,122,1450,-10,-2,1444
+500,Geir Bakke,Vålerenga,3,258,1348,+142,+47,1443
