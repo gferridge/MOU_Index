@@ -1,7 +1,7 @@
 ---
 title: "MOU_Index"
 output: html_document
-date: "2024-09-11"
+date: "2024-09-30"
 ---
 
 ```{r setup, include=FALSE}
@@ -18,13 +18,16 @@ library(worldfootballR)
 library(jtools)
 library(pwr)
 library(ggalt)
+library(stargazer)
+library(stringi)
+
 ```
 
 
-## Loading Data
+## Loading Data. In this instance just replace the read.csv with the command to access your personal version of this file.
 
 ```{r data}
-DAVIESdata.2024.04.02 <- read.csv("C:/Users/George Ferridge/Downloads/DAVIESdata-2017-2024-raw.csv")
+DAVIESdata.2024.04.02 <- read.csv("/MOU_index/DAVIESdata-2017-2024-raw.csv")
 df <- DAVIESdata.2024.04.02
 ```
 
@@ -36,7 +39,7 @@ df_group <- df %>% group_by(League, Team, Season, Gen..Role) %>%
               DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
 ```
 
-## Calculate League averages, STDevs and Vars for the same values
+## Calculate League averages, STDevs and Vars for the same values. This is for alternative specifications.
 
 ```{r}
 df_2 <- df_group %>% group_by(League, Season, Gen..Role) %>%
@@ -46,7 +49,7 @@ df_2 <- df_group %>% group_by(League, Season, Gen..Role) %>%
               Raw_SD_League = sd(DAVIES_TOTAL))
 ```
 
-## Join these two datasets and create a Z score for each Team and Role
+## Join these two datasets and create a Z score for each Team and Role for any future analysis
 
 ```{r}
 df_together <- left_join(df_group,df_2, join_by(League, Season, Gen..Role))
@@ -142,7 +145,7 @@ write.csv(wage_data, "wage_data.csv", row.names=FALSE)
 ## Use preprepared wage data instead of scraping
 
 ```{r}
-wage_data <- read.csv("wage_data.csv")
+wage_data <- read.csv("/MOU_index/wage_data.csv")
 ```
 
 
@@ -212,7 +215,8 @@ df_wage <- left_join(df, wage_data, by=c("Player", "Season"))
 ```
 
 
-## Add in lags variables for previous seasons performance in order to calibrate models
+## Add in lags variables for previous seasons performance in order to figure out prediction models
+
 ```{r}
 lags <- df_wage
 
@@ -234,13 +238,13 @@ lags <- lags %>%
 ## A couple of prediction models, selected from a larger suite. Linear Model 2 is used as prediction algorithm moving forward
 
 ```{r}
-lm1 <- lm(DAVIES ~ WeeklyWageEUR+League+Gen..Role, df_wage)
+lm1 <- lm(DAVIES ~ WeeklyWageEUR+League, df_wage)
+lm2 <- lm(DAVIES ~ WeeklyWageEUR+League+Min, lags)
+lm3 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season, lags)
+lm4 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season+stats_2_seasons_ago, lags)
 
-summary(lm1)
+## stargazer(lm1,lm2,lm3,lm4) can be used to visualize these models and their relative performance if desired
 
-lm2 <- lm(DAVIES ~ WeeklyWageEUR+Gen..Role+League+Min, lags)
-
-summary(lm2)
 ```
 
 ## Generate Predictions for as many players as possible. Debatable assumption made here: players who do not have data from the previous season are assumed to have been purely average for their age, scoring a 0.
@@ -301,7 +305,7 @@ data_plus_predictions <- left_join(df_together, predictions_together, join_by(Te
 ## Importing manager data
 
 ```{r}
-Managers_DAVIES <- read.csv("Managers_DAVIES.csv")
+Managers_DAVIES <- read.csv("/MOU_index/Managers_DAVIES.csv")
 data_plus_predictions$League <- data_plus_predictions$League.x
 managers <- left_join(Managers_DAVIES, data_plus_predictions, join_by(League, Gen..Role, Team, Season))
 ```
@@ -324,10 +328,216 @@ plot_summs(lm6, coefs = c( "ManagerPep Guardiola", "ManagerJurgen Klopp", "Manag
                            "ManagerErik ten Hag", "ManagerChris Wilder", "ManagerChris Hughton", "ManagerGraham Potter"))
 summary(lm6)
 
-ggsave(filename="SelectedManagers.png", width=11, height=7, dpi=1200)
-
 
 ```
 
 
+## Calculating aggregate DAVIES by position groups
+
+```{r}
+
+man2 <- managers
+
+range(man2$DAVIES_weighted.x)
+range(man2$weighted_predictions, na.rm=TRUE)
+
+man2$DW_norm <- (man2$DAVIES_weighted.x+12)/35
+man2$Weight_norm <- (man2$weighted_predictions+12)/35
+
+range(man2$DW_norm)
+range(man2$Weight_norm, na.rm=TRUE)
+
+man2$mandex <- (man2$DW_norm-man2$Weight_norm)/man2$Weight_norm
+
+range(man2$mandex, na.rm=TRUE)
+
+man2 <- man2[order(-man2$mandex),]
+
+```
+
+### Index calculations for position groups
+
+```{r}
+
+man3 <- man2
+
+man3 <- man3 %>% group_by(Manager, Gen..Role) %>% 
+  summarise(Performance = mean(mandex, na.rm=TRUE), manager_count=n())
+
+man3$max_seasons <- 7
+
+man3$corrected_index <- man3$Performance/(man3$max_seasons-man3$manager_count +1)
+
+man3$readable_index <- man3$corrected_index*100
+
+man_CB <- man3[man3$Gen..Role=="Central Def",]
+man_WB <- man3[man3$Gen..Role=="Wide Def",]
+man_ST <- man3[man3$Gen..Role == "Finisher",]
+
+man_ST <- man_ST[order(-man_ST$Performance),] 
+
+man3 <- man3[order(-man3$corrected_index),]
+```
+
+The work up until this point has calculated an index stored in man3 by individual position groups. The rest of the code is focused on the recreation of this for full teams in order to create a central index.
+
+## Total Teams
+
+
+```{r}
+
+df_all <- df
+df_newpred <- df_predict
+
+df_group2 <- df_all %>% group_by(League, Team, Season) %>% 
+  summarise(DAVIES_TOTAL = sum(DAVIES), 
+            DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+
+df_3 <- df_group2 %>% group_by(League, Season) %>%
+  summarise(League_DAVIES = mean(DAVIES_weighted),
+            Raw_League_DAVIES = mean(DAVIES_TOTAL),
+            SD_League = sd(DAVIES_weighted),
+            Raw_SD_League = sd(DAVIES_TOTAL))
+
+df_together2 <- left_join(df_group2,df_3, join_by(League, Season))
+df_together2$Z <- (df_together2$DAVIES_weighted - df_together2$League_DAVIES)/df_together2$SD_League
+```
+
+## Generating predictions and binding those to the aggregated data
+
+```{r}
+
+grouped2 <- df_newpred %>% group_by(League, Team.x, Season) %>% 
+  summarise(predictions = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+leagues2 <- grouped2 %>% group_by(League, Season) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predictions),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predictions))
+
+
+pred_tog <- left_join(grouped2, leagues2, join_by(League, Season))
+
+
+pred_tog$Z_predicted <- ifelse(pred_tog$SD_predictions > 0, (pred_tog$weighted_predictions - pred_tog$League_predictions)/pred_tog$SD_predictions, 0)
+
+pred_tog$Team <- pred_tog$Team.x
+
+dpp2 <- left_join(df_together2, pred_tog, join_by(Team, Season))
+
+dpp2$League <- dpp2$League.x
+```
+## Generating the Index and Ordering the dataframe by the index
+
+```{r}
+managers2 <- Managers_DAVIES
+
+managers2 <- managers2 %>% group_by(Team, League, Season, Manager) %>%
+  summarise(bogie= mean(DAVIES_TOTAL))
+man_total <- left_join(dpp2, managers2, join_by(League, Team, Season))
+
+lm5 <- lm(Z ~ Manager+Z_predicted, data=man_total)
+lm6 <- lm(DAVIES_weighted ~ Manager + weighted_predictions, man_total)
+
+summary(lm5)
+summary(lm6)
+
+range(man_total$DAVIES_weighted, na.rm=TRUE)
+range(man_total$weighted_predictions, na.rm=TRUE)
+
+man_total$DW_norm <- (man_total$DAVIES_weighted+2)/7
+man_total$Weight_norm <- (man_total$weighted_predictions+2)/7
+
+
+range(man_total$DW_norm, na.rm=TRUE)
+range(man_total$Weight_norm, na.rm=TRUE)
+
+man_total$mandex <- (man_total$DW_norm-man_total$Weight_norm)/man_total$Weight_norm
+
+
+man_total <- man_total[order(-man_total$mandex),]
+
+
+
+man_total_agg <- man_total %>% group_by(Manager) %>%
+  summarise(index = mean(mandex, na.rm=TRUE), count=n())
+
+man_total_agg <- man_total_agg[order(-man_total_agg$index),]
+
+man_total_agg$max_seasons <- 7
+
+man_total_agg$corrected_index <- man_total_agg$index/(man_total_agg$max_seasons-man_total_agg$count +1)
+
+man_total_agg$readable_index <- man_total_agg$corrected_index*100
+man_total_agg <- man_total_agg[order(-man_total_agg$readable_index),]
+```
+
+
+
+## Calibration by looking at Manager ELO
+
+```{r}
+
+managerELO <- read.csv("/MOU_index/coaches_ranking.csv")
+
+
+managerELO$Manager <- managerELO$Name
+
+managerELO$Manager <- stri_trans_general(managerELO$Manager, "Latin-ASCII")
+ELOvsINDEX <- left_join(man_total_agg, managerELO, by = "Manager")
+```
+### Testing correlation between them
+
+```{r}
+cor.test(ELOvsINDEX$Coach.Rating, ELOvsINDEX$corrected_index)
+```
+
+## Plotting this correlation
+
+```{r}
+# Calculate Pearson correlation, ignoring NA values
+pearson_corr <- cor(ELOvsINDEX$corrected_index, ELOvsINDEX$Coach.Rating, use = "complete.obs")
+
+# Create the ggplot with increased text size
+ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
+  geom_point(col = "black") +
+  geom_smooth(method = "lm", se = FALSE, col="firebrick") +
+  xlab("Index Value") +
+  ylab("ELO") +
+  theme_apa() +
+  geom_text(aes(x = 0.25, y = 1950, label = paste("r =", round(pearson_corr, 3))), 
+            size = 5, color = "black", hjust = 0) +  # Adjust text size for the correlation label
+  theme(
+    axis.title.x = element_text(size = 16),   # X-axis title text size
+    axis.title.y = element_text(size = 16),   # Y-axis title text size
+    axis.text.x = element_text(size = 14),    # X-axis labels text size
+    axis.text.y = element_text(size = 14),    # Y-axis labels text size
+    plot.title = element_text(size = 20, face = "bold")  # Plot title text size (optional)
+  )
+
+```
+
+## Plotting the performance of the Predicted DAVIES vs Actual observed
+
+```{r}
+
+correlation <- cor(df_predict$predicted_stats, df_predict$DAVIES, use="complete.obs")
+ggplot(df_predict, aes(x = predicted_stats, y = DAVIES)) +
+  geom_point(col = "black") +
+  geom_smooth(method = "lm", se = FALSE, col="firebrick") +
+  xlab("DAVIES Prediction") +
+  ylab("Observed Value") +
+  theme_apa()  +
+  theme(
+    axis.title.x = element_text(size = 16),   # X-axis title text size
+    axis.title.y = element_text(size = 16),   # Y-axis title text size
+    axis.text.x = element_text(size = 14),    # X-axis labels text size
+    axis.text.y = element_text(size = 14),    # Y-axis labels text size
+    plot.title = element_text(size = 20, face = "bold")  # Plot title text size (optional)
+  )
+
+
+```
 
