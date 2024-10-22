@@ -20,6 +20,7 @@ library(pwr)
 library(ggalt)
 library(stargazer)
 library(stringi)
+library(ellipsis)
 
 ```
 
@@ -27,7 +28,7 @@ library(stringi)
 ## Loading Data. In this instance just replace the read.csv with the command to access your personal version of this file.
 
 ```{r data}
-DAVIESdata.2024.04.02 <- read.csv("/MOU_index/DAVIESdata-2017-2024-raw.csv")
+DAVIESdata.2024.04.02 <- read.csv("~/DAVIESdata-2017-2024-raw.csv")
 df <- DAVIESdata.2024.04.02
 ```
 
@@ -145,7 +146,7 @@ write.csv(wage_data, "wage_data.csv", row.names=FALSE)
 ## Use preprepared wage data instead of scraping
 
 ```{r}
-wage_data <- read.csv("/MOU_index/wage_data.csv")
+wage_data <- read.csv("~/wage_data.csv")
 ```
 
 
@@ -305,7 +306,7 @@ data_plus_predictions <- left_join(df_together, predictions_together, join_by(Te
 ## Importing manager data
 
 ```{r}
-Managers_DAVIES <- read.csv("/MOU_index/Managers_DAVIES.csv")
+Managers_DAVIES <- read.csv("~/Managers_DAVIES.csv")
 data_plus_predictions$League <- data_plus_predictions$League.x
 managers <- left_join(Managers_DAVIES, data_plus_predictions, join_by(League, Gen..Role, Team, Season))
 ```
@@ -321,12 +322,6 @@ lm6 <- lm(DAVIES_weighted.y ~ Manager + weighted_predictions, managers)
 summary(lm5)
 
 lm6 <- lm(DAVIES_weighted.y ~ weighted_predictions, managers)
-
-plot_summs(lm6, coefs = c( "ManagerPep Guardiola", "ManagerJurgen Klopp", "ManagerMichel","ManagerRoberto De Zerbi",
-                           "ManagerMauricio Pochettino", "ManagerXavi", "ManagerXabi Alonso", "ManagerSteve Bruce",
-                           "ManagerScott Parker", "ManagerRoy Hodgson", "ManagerMikel Arteta", "ManagerJose Mourinho",
-                           "ManagerErik ten Hag", "ManagerChris Wilder", "ManagerChris Hughton", "ManagerGraham Potter"))
-summary(lm6)
 
 
 ```
@@ -480,7 +475,7 @@ man_total_agg <- man_total_agg[order(-man_total_agg$readable_index),]
 
 ```{r}
 
-managerELO <- read.csv("/MOU_index/coaches_ranking.csv")
+managerELO <- read.csv("~/coaches_ranking.csv")
 
 
 managerELO$Manager <- managerELO$Name
@@ -540,4 +535,98 @@ ggplot(df_predict, aes(x = predicted_stats, y = DAVIES)) +
 
 
 ```
+
+
+
+
+## Now we look to replicate and adjust using p90 data but following the same formula
+
+# Data Loading
+
+```{r}
+DAVIES_p90 <- read.csv("~/DAVIESdata-2017-2024-p90.csv")
+```
+
+#Grouping by positional groups again
+
+```{r}
+group_p90 <- DAVIES_p90 %>% group_by(League, Team, Season, Gen..Role) %>% 
+    summarise(DAVIES_TOTAL = sum(DAVIES), 
+              DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+```
+
+# League Averages Calculated
+
+```{r}
+leagues.averages_p90 <- group_p90 %>% group_by(League, Season, Gen..Role) %>%
+    summarise(League_DAVIES = mean(DAVIES_weighted),
+              Raw_League_DAVIES = mean(DAVIES_TOTAL),
+              SD_League = sd(DAVIES_weighted),
+              Raw_SD_League = sd(DAVIES_TOTAL))
+```
+
+# Joining and Calculating Z Scores
+
+```{r}
+joint_p90 <- left_join(group_p90,leagues.averages_p90, join_by(League, Season, Gen..Role))
+
+
+joint_p90$Z <- (joint_p90$DAVIES_weighted - joint_p90$League_DAVIES)/joint_p90$SD_League
+```
+
+
+# Add wage data in to this again
+
+```{r}
+df_wage_p90 <- left_join(DAVIES_p90, wage_data, by=c("Player", "Season", "Team"))
+```
+
+
+# Add in lags for p90 stats
+
+
+## Add in lags variables for previous seasons performance in order to figure out prediction models
+
+```{r}
+lags_p90 <- df_wage_p90
+
+lags_p90 <- lags_p90 %>%
+  arrange(Player, Season) %>%  # Sort by player and season
+  group_by(Player) %>%         # Group by player, but not reducing data
+  mutate(
+    stats_last_season = lag(DAVIES, 1),     # Stats from the previous season
+    stats_2_seasons_ago = lag(DAVIES, 2),   # Stats from two seasons ago
+    stats_3_seasons_ago = lag(DAVIES, 3),   # Stats from three seasons ago
+    stats_4_seasons_ago = lag(DAVIES, 4),   # Stats from four seasons ago
+    stats_5_seasons_ago = lag(DAVIES, 5),   # Stats from five seasons ago
+    stats_6_seasons_ago = lag(DAVIES, 6)    # Stats from six seasons ago
+  ) %>%
+  ungroup()  # Optionally remove the grouping structure
+```
+
+
+
+
+## Formulating a good p90 prediction
+
+```{r}
+
+colnames(df_wage_p90)
+lm1_p <- lm(DAVIES ~ WeeklyWageEUR+League, df_wage_p90)
+lm2_p <- lm(DAVIES ~ WeeklyWageEUR+League+Age+Gen..Role, lags_p90)
+lm3_p <- lm(DAVIES ~ WeeklyWageEUR+League+stats_last_season, lags_p90)
+lm4_p <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season+stats_2_seasons_ago, lags_p90)
+
+stargazer(lm1_p,lm2_p,lm3_p,lm4_p, type="text")
+
+```
+
+## The key is that a prediction algorithm can't use the actual onfield statistics from the season because those are the most endogenous things to a manager. We need to use all possible information not contained in these statistics.
+
+
+
+
+### Interesting Data Visualizations that are possible with existing data
+
+
 
