@@ -1,7 +1,7 @@
 ---
 title: "MOU_Index"
 output: html_document
-date: "2024-09-30"
+date: "2024-10-23"
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +21,6 @@ library(ggalt)
 library(stargazer)
 library(stringi)
 library(ellipsis)
-
 ```
 
 
@@ -624,6 +623,34 @@ stargazer(lm1_p,lm2_p,lm3_p,lm4_p, type="text")
 ## The key is that a prediction algorithm can't use the actual onfield statistics from the season because those are the most endogenous things to a manager. We need to use all possible information not contained in these statistics.
 
 
+
+
+### Testing Manager Season Percentage Assumption
+
+```{r}
+epl_teams <- tm_league_team_urls(country_name = "England", start_year = 2017:2024)
+
+#----- then use the URLs to pass to the function, and select the role you wish to see results for: -----#
+club_manager_history <- tm_team_staff_history(team_urls = epl_teams, staff_role = "Manager")
+dplyr::glimpse(club_manager_history)
+
+club_manager_history
+
+```
+
+# Player Valuation Data for Controls?
+
+```{r}
+ big_5_valuations <- tm_player_market_values(country_name = c("England", "Spain", "Italy", "France", "Germany"),
+                                        start_year = 2017:2023)
+big_5_valuations
+
+```
+
+
+```{r}
+write.csv(big_5_valuations, "tm_playervalues.csv")
+```
 
 
 ### Interesting Data Visualizations that are possible with existing data
