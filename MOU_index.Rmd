@@ -628,7 +628,7 @@ stargazer(lm1_p,lm2_p,lm3_p,lm4_p, type="text")
 ### Testing Manager Season Percentage Assumption
 
 ```{r}
-epl_teams <- tm_league_team_urls(country_name = "England", start_year = 2017:2024)
+epl_teams <- tm_league_team_urls(country_name = "England", start_year = 2021)
 
 #----- then use the URLs to pass to the function, and select the role you wish to see results for: -----#
 club_manager_history <- tm_team_staff_history(team_urls = epl_teams, staff_role = "Manager")
@@ -648,8 +648,75 @@ big_5_valuations
 ```
 
 
+
+
+## Calculating Manager attribution with a variable threshold
+
+
+# First putting in season dates
+
 ```{r}
-write.csv(big_5_valuations, "tm_playervalues.csv")
+# Create a DataFrame for season dates
+season_start_dates <- as.Date(c('2017-08-01', '2018-08-01', '2019-08-01', 
+                                '2020-08-01', '2021-08-01', '2022-08-01', 
+                                '2023-08-01'))
+season_end_dates <- as.Date(c('2018-07-31', '2019-07-31', '2020-07-31', 
+                              '2021-07-31', '2022-07-31', '2023-07-31', 
+                              '2024-07-31'))
+seasons <- data.frame(
+  season = c("2017/2018", "2018/2019", "2019/2020", "2020/2021", 
+             "2021/2022", "2022/2023", "2023/2024"),
+  start_date = season_start_dates,
+  end_date = season_end_dates
+)
+
+```
+
+```{r}
+calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0.5) {
+  result <- data.frame()
+  
+  for (i in 1:nrow(seasons_df)) {
+    season_start <- seasons_df$start_date[i]
+    season_end <- seasons_df$end_date[i]
+    season_name <- seasons_df$season[i]
+    
+    for (j in 1:nrow(managers_df)) {
+      manager_start <- managers_df$appointed[j]
+      manager_end <- managers_df$end_date[j]
+      team <- managers_df$team_name[j]
+      manager <- managers_df$staff_name[j]
+      
+      # Handle missing values in manager start/end dates
+      if (is.na(manager_end)) manager_end <- Sys.Date()  # Assuming if no end date, manager is still active
+      
+      # Calculate the overlap between manager's tenure and the season
+      overlap_start <- max(manager_start, season_start, na.rm = TRUE)
+      overlap_end <- min(manager_end, season_end, na.rm = TRUE)
+      
+      # Only proceed if overlap is valid
+      if (!is.na(overlap_start) && !is.na(overlap_end) && overlap_start <= overlap_end) {
+        days_in_season <- as.numeric(season_end - season_start + 1)
+        days_managed <- as.numeric(overlap_end - overlap_start + 1)
+        
+        # Check if the manager managed more than the threshold of the season
+        if ((days_managed / days_in_season) >= threshold) {
+          result <- rbind(result, data.frame(
+            team = team_name,
+            manager = staff_name,
+            season = season_name
+          ))
+        }
+      }
+    }
+  }
+  
+  return(result)
+}
+
+# Apply the function again
+attributed_managers <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.5)
+
 ```
 
 
