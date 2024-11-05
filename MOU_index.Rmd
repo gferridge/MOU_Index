@@ -628,10 +628,38 @@ stargazer(lm1_p,lm2_p,lm3_p,lm4_p, type="text")
 ### Testing Manager Season Percentage Assumption
 
 ```{r}
-epl_teams <- tm_league_team_urls(country_name = "England", start_year = 2021)
+# Define leagues and years
+leagues <- c("Spain", "Germany", "France", "Italy", "England")  # La Liga, Bundesliga, Ligue 1, Serie A, Premier League
+years <- 2017:2023  # From 2017 to 2023
+
+# Initialize an empty list to store data frames for each league-year combination
+all_teams_list <- list()
+
+# Loop over each league and year to get team URLs
+for (league in leagues) {
+  for (year in years) {
+    # Fetch the team URLs for the league and year
+    team_urls <- tm_league_team_urls(country_name = league, start_year = year)
+    
+    # Convert the result to a data frame and add columns for league and year
+    league_df <- data.frame(
+      league = league,
+      year = year,
+      team_url = team_urls,
+      stringsAsFactors = FALSE
+    )
+    
+    # Append the data frame to the list
+    all_teams_list <- append(all_teams_list, list(league_df))
+  }
+}
+
+# Combine all data frames into one and remove duplicates
+all_teams <- do.call(rbind, all_teams_list)
+all_teams <- unique(all_teams)
 
 #----- then use the URLs to pass to the function, and select the role you wish to see results for: -----#
-club_manager_history <- tm_team_staff_history(team_urls = epl_teams, staff_role = "Manager")
+club_manager_history <- tm_team_staff_history(team_urls = top5_teams, staff_role = "Manager")
 dplyr::glimpse(club_manager_history)
 
 club_manager_history
@@ -674,37 +702,48 @@ seasons <- data.frame(
 
 ```{r}
 calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0.5) {
-  result <- data.frame()
+  # Check if columns exist in the managers dataframe
+  if (!all(c("team_name", "staff_name", "appointed", "end_date") %in% colnames(managers_df))) {
+    stop("Error: One or more required columns are missing from the managers dataframe.")
+  }
+  
+  # Initialize an empty result dataframe
+  result <- data.frame(team_name = character(), staff_name = character(), season = character(), stringsAsFactors = FALSE)
   
   for (i in 1:nrow(seasons_df)) {
+    # Get the current season's start and end dates
     season_start <- seasons_df$start_date[i]
     season_end <- seasons_df$end_date[i]
     season_name <- seasons_df$season[i]
     
     for (j in 1:nrow(managers_df)) {
-      manager_start <- managers_df$appointed[j]
-      manager_end <- managers_df$end_date[j]
-      team <- managers_df$team_name[j]
-      manager <- managers_df$staff_name[j]
+      # Access each manager's tenure and team/staff information explicitly with managers_df$
+      appointed <- managers_df$appointed[j]
+      end_date <- managers_df$end_date[j]
+      team_name <- managers_df$team_name[j]
+      staff_name <- managers_df$staff_name[j]
       
-      # Handle missing values in manager start/end dates
-      if (is.na(manager_end)) manager_end <- Sys.Date()  # Assuming if no end date, manager is still active
+      # Handle missing values for appointed/end dates
+      if (is.na(appointed)) next  # If appointed date is NA, skip
+      if (is.na(end_date)) end_date <- Sys.Date()  # Assume manager is still active if end_date is NA
       
-      # Calculate the overlap between manager's tenure and the season
-      overlap_start <- max(manager_start, season_start, na.rm = TRUE)
-      overlap_end <- min(manager_end, season_end, na.rm = TRUE)
+      # Calculate the overlap between the manager's tenure and the season
+      overlap_start <- max(appointed, season_start, na.rm = TRUE)
+      overlap_end <- min(end_date, season_end, na.rm = TRUE)
       
-      # Only proceed if overlap is valid
+      # Ensure the overlap is valid
       if (!is.na(overlap_start) && !is.na(overlap_end) && overlap_start <= overlap_end) {
         days_in_season <- as.numeric(season_end - season_start + 1)
         days_managed <- as.numeric(overlap_end - overlap_start + 1)
         
-        # Check if the manager managed more than the threshold of the season
+        # Check if the manager was in charge for more than the threshold of the season
         if ((days_managed / days_in_season) >= threshold) {
+          # Add the result to the dataframe
           result <- rbind(result, data.frame(
-            team = team_name,
-            manager = staff_name,
-            season = season_name
+            team_name = team_name,
+            staff_name = staff_name,
+            season = season_name,
+            stringsAsFactors = FALSE
           ))
         }
       }
@@ -714,11 +753,188 @@ calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0
   return(result)
 }
 
-# Apply the function again
-attributed_managers <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.5)
+# Example: Apply the function to the manager and season dataframes
+attributed_managers <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.501)
+print(attributed_managers)
+
+attributed_managers_60 <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.6)
 
 ```
 
+#Rename columns and prepare the data to be matched up properly
+
+```{r}
+attributed_managers <- attributed_managers %>%
+  rename(manager = staff_name) %>%
+  mutate(manager = stri_trans_general(manager, "Latin-ASCII"))
+
+attributed_managers <- attributed_managers %>%
+  arrange(team_name)
+
+```
+
+Now need to make sure the team names match up between the DAVIES data and the Transfermarkt data, which I know for a fact they do not in many instances. Chelsea FC vs just Chelsea for example, Olympique Lyon vs Lyonnais vs just Lyon.
+
+
+## Fixing the team names together
+
+```{r}
+# Mapping table
+mapping <- data.frame(
+  original_name = c("1.FC Köln", "1.FC Union Berlin", "1.FSV Mainz 05", "AC Milan", "ACF Fiorentina", "AS Monaco", 
+                    "AS Roma", "AS Saint-Étienne", "Angers SCO", "Arminia Bielefeld", "Arsenal FC", "Aston Villa", 
+                    "Atalanta BC", "Athletic Bilbao", "Atlético de Madrid", "Bayer 04 Leverkusen", "Bayern Munich", 
+                    "Bologna FC 1909", "Borussia Dortmund", "Borussia Mönchengladbach", "Brentford FC", 
+                    "Brighton & Hove Albion", "Burnley FC", "CA Osasuna", "Cagliari Calcio", "Celta de Vigo", 
+                    "Chelsea FC", "Clermont Foot 63", "Crystal Palace", "Cádiz CF", "Deportivo Alavés", 
+                    "ESTAC Troyes", "Eintracht Frankfurt", "Elche CF", "Everton FC", "FC Augsburg", "FC Barcelona", 
+                    "FC Empoli", "FC Girondins Bordeaux", "FC Lorient", "FC Metz", "FC Nantes", "Genoa CFC", 
+                    "Getafe CF", "Granada CF", "Hellas Verona", "Hertha BSC", "Inter Milan", "Juventus FC", 
+                    "LOSC Lille", "Leeds United", "Leicester City", "Levante UD", "Liverpool FC", "Manchester City", 
+                    "Manchester United", "Montpellier HSC", "Newcastle United", "Norwich City", "OGC Nice", 
+                    "Olympique Lyon", "Olympique Marseille", "Paris Saint-Germain", "RB Leipzig", "RC Lens", 
+                    "RC Strasbourg Alsace", "RCD Espanyol Barcelona", "RCD Mallorca", "Rayo Vallecano", 
+                    "Real Betis Balompié", "Real Madrid", "Real Sociedad", "SC Freiburg", "SS Lazio", "SSC Napoli", 
+                    "Sevilla FC", "Southampton FC", "SpVgg Greuther Fürth", "Spezia Calcio", "Stade Brestois 29", 
+                    "Stade Reims", "Stade Rennais FC", "TSG 1899 Hoffenheim", "Torino FC", "Tottenham Hotspur", 
+                    "UC Sampdoria", "US Salernitana 1919", "US Sassuolo", "Udinese Calcio", "Valencia CF", 
+                    "Venezia FC", "VfB Stuttgart", "VfL Bochum", "VfL Wolfsburg", "Villarreal CF", "Watford FC", 
+                    "West Ham United", "Wolverhampton Wanderers"),
+  standardized_name = c("Köln", "Union Berlin", "Mainz 05", "Milan", "Fiorentina", "Monaco", "Roma", "Saint-Étienne", 
+                        "Angers", "Arminia", "Arsenal", "Aston Villa", "Atalanta", "Athletic Club", "Atlético Madrid", 
+                        "Leverkusen", "Bayern Munich", "Bologna", "Dortmund", "Gladbach", "Brentford", "Brighton", 
+                        "Burnley", "Osasuna", "Cagliari", "Celta Vigo", "Chelsea", "Clermont Foot", "Crystal Palace", 
+                        "Cádiz", "Alavés", "Troyes", "Eint Frankfurt", "Elche", "Everton", "Augsburg", "Barcelona", 
+                        "Empoli", "Bordeaux", "Lorient", "Metz", "Nantes", "Genoa", "Getafe", "Granada", "Hellas Verona", 
+                        "Hertha BSC", "Inter", "Juventus", "Lille", "Leeds United", "Leicester City", "Levante", 
+                        "Liverpool", "Manchester City", "Manchester Utd", "Montpellier", "Newcastle Utd", "Norwich City", 
+                        "Nice", "Lyon", "Marseille", "Paris S-G", "RB Leipzig", "Lens", "Strasbourg", "Espanyol", 
+                        "Mallorca", "Rayo Vallecano", "Betis", "Real Madrid", "Real Sociedad", "Freiburg", "Lazio", 
+                        "Napoli", "Sevilla", "Southampton", "Greuther Fürth", "Spezia", "Brest", "Reims", "Rennes", 
+                        "Hoffenheim", "Torino", "Tottenham", "Sampdoria", "Salernitana", "Sassuolo", "Udinese", 
+                        "Valencia", "Venezia", "Stuttgart", "Bochum", "Wolfsburg", "Villarreal", "Watford", 
+                        "West Ham", "Wolves")
+)
+
+```
+
+## And replacing them in the dataset
+
+```{r}
+# Join attributed_managers with the mapping table and update team_name
+attributed_managers <- attributed_managers %>%
+  left_join(mapping, by = c("team_name" = "original_name")) %>%
+  mutate(team_name = ifelse(is.na(standardized_name), team_name, standardized_name)) %>%
+  select(-standardized_name)  # Drop the temporary standardized_name column
+
+attributed_managers$season <- gsub("/", "-", attributed_managers$season)
+# View the updated data frame
+
+attributed_managers <- attributed_managers %>%
+  rename(
+    Team = team_name,
+    Season = season
+  )
+print(attributed_managers)
+
+```
+
+
+# Join my new manager database to the original, and replicate the code to create a more accurate manager index
+
+```{r}
+managers <- left_join(data_plus_predictions, attributed_managers, by=c("Team", "Season"))
+
+print(managers)
+```
+
+# Calculating total manager index values based on this
+
+```{r}
+team.stats.no.pos.groups <- df %>% group_by(League, Team, Season) %>% 
+  summarise(DAVIES_TOTAL = sum(DAVIES), 
+            DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+
+league.stats.no.pos.groups <- team.stats.no.pos.groups %>% group_by(League, Season) %>%
+  summarise(League_DAVIES = mean(DAVIES_weighted),
+            Raw_League_DAVIES = mean(DAVIES_TOTAL),
+            SD_League = sd(DAVIES_weighted),
+            Raw_SD_League = sd(DAVIES_TOTAL))
+
+team.stats.with.league <- left_join(team.stats.no.pos.groups,league.stats.no.pos.groups, join_by(League, Season))
+team.stats.with.league$Z <- (team.stats.with.league$DAVIES_weighted - team.stats.with.league$League_DAVIES)/team.stats.with.league$SD_League
+```
+# Now add in predictions
+
+```{r}
+team.predictions.no.pos.groups <- df_predict %>% group_by(League, Team.x, Season) %>% 
+  summarise(predictions = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+league.predictions.no.pos.groups <- team.predictions.no.pos.groups %>% group_by(League, Season) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predictions),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predictions))
+
+
+joint.team.predictions <- left_join(team.predictions.no.pos.groups, league.predictions.no.pos.groups, join_by(League, Season))
+
+
+joint.team.predictions$Z_predicted <- ifelse(joint.team.predictions$SD_predictions > 0, (joint.team.predictions$weighted_predictions - joint.team.predictions$League_predictions)/joint.team.predictions$SD_predictions, 0)
+
+joint.team.predictions$Team <- joint.team.predictions$Team.x
+
+print(joint.team.predictions)
+
+team.based.statistics <- left_join(team.stats.with.league, joint.team.predictions, join_by(Team, Season))
+
+team.based.statistics$League <- team.based.statistics$League.x
+```
+
+# Now can bind with manager data to start to attribute to managers
+
+```{r}
+
+managers_index_final <- left_join(team.based.statistics, attributed_managers, join_by(Team, Season))
+
+```
+
+# Generate manager index values by season
+
+```{r}
+
+managers_index_final$DW_norm <- (managers_index_final$DAVIES_weighted+2)/7
+managers_index_final$Weight_norm <- (managers_index_final$weighted_predictions+2)/7
+
+
+range(managers_index_final$DW_norm, na.rm=TRUE)
+range(managers_index_final$Weight_norm, na.rm=TRUE)
+
+managers_index_final$mandex <- (managers_index_final$DW_norm-managers_index_final$Weight_norm)/managers_index_final$Weight_norm
+
+
+managers_index_final <- managers_index_final[order(-managers_index_final$mandex),]
+```
+
+# Aggregate these by manager to then find the final index, corrected for seasons
+
+```{r}
+
+managers_index_all_seasons <- managers_index_final%>% group_by(manager) %>%
+  summarise(index = mean(mandex, na.rm=TRUE), count=n())
+
+managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$index),]
+
+managers_index_all_seasons$max_seasons <- 8
+
+managers_index_all_seasons$corrected_index <- managers_index_all_seasons$index/(managers_index_all_seasons$max_seasons-managers_index_all_seasons$count +1)
+
+managers_index_all_seasons$readable_index <- managers_index_all_seasons$corrected_index*100
+managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$readable_index),]
+
+print(managers_index_all_seasons)
+```
 
 ### Interesting Data Visualizations that are possible with existing data
 
