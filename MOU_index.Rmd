@@ -243,9 +243,29 @@ lm2 <- lm(DAVIES ~ WeeklyWageEUR+League+Min, lags)
 lm3 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season, lags)
 lm4 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season+stats_2_seasons_ago, lags)
 
+lm_wages <- lm(WeeklyWageEUR ~ Team.y+Age+Gen..Role, df_wage)
+summary(lm_wages)
+colnames(df_wage)
 ## stargazer(lm1,lm2,lm3,lm4) can be used to visualize these models and their relative performance if desired
 
 ```
+# Generate a wage predictive algorithm here based on the lm_wages above, giving us an indication of what these players wages would have been. Its fidelity could be debated but it has an adjusted R^2 of 0.4831 which is sufficient for our purposes given that the quality of player that we are looking at here skews younger and will have less influence on our final results.
+
+```{r}
+# Step 1: Ensure the prediction model is fitted (assuming lm_wages is already fitted)
+
+# Step 2: Predict the missing values for WeeklyWageEUR
+na_indices <- which(is.na(df_wage$WeeklyWageEUR))  # Identify rows with NA
+predicted_values <- predict(lm_wages, newdata = df_wage[na_indices, ])
+
+# Step 3: Replace NA values with the predicted values
+df_wage$WeeklyWageEUR[na_indices] <- predicted_values
+
+# The dataframe df_wage now has NA values replaced with predicted values in WeeklyWageEUR
+
+```
+
+
 
 ## Generate Predictions for as many players as possible. Debatable assumption made here: players who do not have data from the previous season are assumed to have been purely average for their age, scoring a 0.
 
@@ -657,9 +677,9 @@ for (league in leagues) {
 # Combine all data frames into one and remove duplicates
 all_teams <- do.call(rbind, all_teams_list)
 all_teams <- unique(all_teams)
-
+print(all_teams)
 #----- then use the URLs to pass to the function, and select the role you wish to see results for: -----#
-club_manager_history <- tm_team_staff_history(team_urls = top5_teams, staff_role = "Manager")
+club_manager_history <- tm_team_staff_history(team_urls = all_teams$team_url, staff_role = "Manager")
 dplyr::glimpse(club_manager_history)
 
 club_manager_history
@@ -668,7 +688,7 @@ club_manager_history
 
 # Player Valuation Data for Controls?
 
-```{r}
+```{r}{eval=FALSE}
  big_5_valuations <- tm_player_market_values(country_name = c("England", "Spain", "Italy", "France", "Germany"),
                                         start_year = 2017:2023)
 big_5_valuations
@@ -738,6 +758,7 @@ calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0
         
         # Check if the manager was in charge for more than the threshold of the season
         if ((days_managed / days_in_season) >= threshold) {
+          print(paste(staff_name," managed ",team_name, " for ",days_managed, " in ",season_name) )
           # Add the result to the dataframe
           result <- rbind(result, data.frame(
             team_name = team_name,
@@ -755,8 +776,9 @@ calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0
 
 # Example: Apply the function to the manager and season dataframes
 attributed_managers <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.501)
-print(attributed_managers)
-
+colnames(attributed_managers)
+julian <- attributed_managers[attributed_managers$staff_name == "Julian Nagelsmann",]
+print(julian)
 attributed_managers_60 <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.6)
 
 ```
@@ -835,6 +857,7 @@ attributed_managers <- attributed_managers %>%
     Team = team_name,
     Season = season
   )
+attributed_managers <- unique(attributed_managers)
 print(attributed_managers)
 
 ```
@@ -911,9 +934,13 @@ managers_index_final$Weight_norm <- (managers_index_final$weighted_predictions+2
 range(managers_index_final$DW_norm, na.rm=TRUE)
 range(managers_index_final$Weight_norm, na.rm=TRUE)
 
-managers_index_final$mandex <- (managers_index_final$DW_norm-managers_index_final$Weight_norm)/managers_index_final$Weight_norm
+managers_index_final$mandex <- (managers_index_final$DW_norm- managers_index_final$Weight_norm)/managers_index_final$Weight_norm
+print(managers_index_final)
 
-
+allegri <- managers_index_final[managers_index_final$manager == "Massimiliano Allegri",]
+print(allegri)
+juve <- df_wage[df_wage$Team.x == "Juventus",]
+print(juve)
 managers_index_final <- managers_index_final[order(-managers_index_final$mandex),]
 ```
 
@@ -926,7 +953,7 @@ managers_index_all_seasons <- managers_index_final%>% group_by(manager) %>%
 
 managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$index),]
 
-managers_index_all_seasons$max_seasons <- 8
+managers_index_all_seasons$max_seasons <- 7
 
 managers_index_all_seasons$corrected_index <- managers_index_all_seasons$index/(managers_index_all_seasons$max_seasons-managers_index_all_seasons$count +1)
 
