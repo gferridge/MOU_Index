@@ -21,6 +21,7 @@ library(ggalt)
 library(stargazer)
 library(stringi)
 library(ellipsis)
+library(moments)
 ```
 
 
@@ -811,6 +812,9 @@ attributed_managers <- attributed_managers %>%
   arrange(team_name)
 
 print(attributed_managers)
+
+unique(attributed_managers$team_name)
+unique(data_plus_predictions$Team)
 ```
 
 Now need to make sure the team names match up between the DAVIES data and the Transfermarkt data, which I know for a fact they do not in many instances. Chelsea FC vs just Chelsea for example, Olympique Lyon vs Lyonnais vs just Lyon.
@@ -825,39 +829,65 @@ Now need to make sure the team names match up between the DAVIES data and the Tr
 
 
 mapping <- data.frame(
-  original_name = c("1.FC Köln", "1.FC Union Berlin", "1.FSV Mainz 05", "AC Milan", "ACF Fiorentina", "AS Monaco", 
-                    "AS Roma", "AS Saint-Étienne", "Angers SCO", "Arminia Bielefeld", "Arsenal FC", "Aston Villa", 
-                    "Atalanta BC", "Athletic Bilbao", "Atlético de Madrid", "Bayer 04 Leverkusen", "Bayern Munich", 
-                    "Bologna FC 1909", "Borussia Dortmund", "Borussia Mönchengladbach", "Brentford FC", 
-                    "Brighton & Hove Albion", "Burnley FC", "CA Osasuna", "Cagliari Calcio", "Celta de Vigo", 
-                    "Chelsea FC", "Clermont Foot 63", "Crystal Palace", "Cádiz CF", "Deportivo Alavés", 
-                    "ESTAC Troyes", "Eintracht Frankfurt", "Elche CF", "Everton FC", "FC Augsburg", "FC Barcelona", 
-                    "FC Empoli", "FC Girondins Bordeaux", "Fulham FC", "FC Lorient", "FC Metz", "FC Nantes", "Genoa CFC", 
-                    "Getafe CF", "Granada CF", "Hellas Verona", "Hertha BSC", "Inter Milan", "Juventus FC", 
-                    "LOSC Lille", "Leeds United", "Leicester City", "Levante UD", "Liverpool FC", "Manchester City", 
-                    "Manchester United", "Montpellier HSC", "Newcastle United", "Norwich City", "OGC Nice", 
-                    "Olympique Lyon", "Olympique Marseille", "Paris Saint-Germain", "RB Leipzig", "RC Lens", 
-                    "RC Strasbourg Alsace", "RCD Espanyol Barcelona", "RCD Mallorca", "Rayo Vallecano", 
-                    "Real Betis Balompié", "Real Madrid", "Real Sociedad", "SC Freiburg", "SS Lazio", "SSC Napoli", 
-                    "Sevilla FC", "Southampton FC", "SpVgg Greuther Fürth", "Spezia Calcio", "Stade Brestois 29", 
-                    "Stade Reims", "Stade Rennais FC", "TSG 1899 Hoffenheim", "Torino FC", "Tottenham Hotspur", 
-                    "UC Sampdoria", "US Salernitana 1919", "US Sassuolo", "Udinese Calcio", "Valencia CF", 
-                    "Venezia FC", "VfB Stuttgart", "VfL Bochum", "VfL Wolfsburg", "Villarreal CF", "Watford FC", 
-                    "West Ham United", "Wolverhampton Wanderers"),
-  standardized_name = c("Köln", "Union Berlin", "Mainz 05", "Milan", "Fiorentina", "Monaco", "Roma", "Saint-Étienne", 
-                        "Angers", "Arminia", "Arsenal", "Aston Villa", "Atalanta", "Athletic Club", "Atlético Madrid", 
-                        "Leverkusen", "Bayern Munich", "Bologna", "Dortmund", "Gladbach", "Brentford", "Brighton", 
-                        "Burnley", "Osasuna", "Cagliari", "Celta Vigo", "Chelsea", "Clermont Foot", "Crystal Palace", 
-                        "Cádiz", "Alavés", "Troyes", "Eint Frankfurt", "Elche", "Everton", "Augsburg", "Barcelona", 
-                        "Empoli", "Bordeaux", "Fulham", "Lorient", "Metz", "Nantes", "Genoa", "Getafe", "Granada", "Hellas Verona", 
-                        "Hertha BSC", "Inter", "Juventus", "Lille", "Leeds United", "Leicester City", "Levante", 
-                        "Liverpool", "Manchester City", "Manchester Utd", "Montpellier", "Newcastle Utd", "Norwich City", 
-                        "Nice", "Lyon", "Marseille", "Paris S-G", "RB Leipzig", "Lens", "Strasbourg", "Espanyol", 
-                        "Mallorca", "Rayo Vallecano", "Betis", "Real Madrid", "Real Sociedad", "Freiburg", "Lazio", 
-                        "Napoli", "Sevilla", "Southampton", "Greuther Fürth", "Spezia", "Brest", "Reims", "Rennes", 
-                        "Hoffenheim", "Torino", "Tottenham", "Sampdoria", "Salernitana", "Sassuolo", "Udinese", 
-                        "Valencia", "Venezia", "Stuttgart", "Bochum", "Wolfsburg", "Villarreal", "Watford", 
-                        "West Ham", "Wolves")
+  original_name = c("1.FC Heidenheim 1846", "1.FC Köln", "1.FC Nuremberg", "1.FC Union Berlin",
+                                    "1.FSV Mainz 05", "AC Ajaccio", "AC Milan", "AC Monza", "ACF Fiorentina",
+                                    "AFC Bournemouth", "AJ Auxerre", "AS Monaco", "AS Roma","AS Saint-Étienne",
+                                    "Amiens SC", "Angers SCO", "Arminia Bielefeld", "Arsenal FC", "Aston Villa",
+                                    "Atalanta BC", "Athletic Bilbao","Atlético de Madrid", "Bayer 04 Leverkusen",
+                                    "Bayern Munich", "Benevento Calcio", "Bologna FC 1909", "Borussia Dortmund",
+                                    "Borussia Mönchengladbach", "Brentford FC", "Brescia Calcio", 
+                                    "Brighton & Hove Albion","Burnley FC","CA Osasuna","CD Leganés",
+                                    "Cagliari Calcio","Cardiff City", "Celta de Vigo", "Chelsea FC","Chievo Verona",
+                                    "Clermont Foot 63","Crystal Palace","Cádiz CF", "Deportivo Alavés",
+                                    "Deportivo de La Coruña", "Dijon FCO", "EA Guingamp", "ESTAC Troyes",
+                                    "Eintracht Frankfurt", "Elche CF", "Everton FC", "FC Augsburg", "FC Barcelona",
+                                    "FC Crotone", "FC Empoli", "FC Girondins Bordeaux","FC Lorient", "FC Metz", 
+                                    "FC Nantes","FC Schalke 04", "FC Toulouse", "Fortuna Düsseldorf", 
+                                    "Frosinone Calcio", "Fulham FC", "Genoa CFC", "Getafe CF","Girona FC",
+                                    "Granada CF","Hamburger SV", "Hannover 96", "Hellas Verona", "Hertha BSC",
+                                    "Huddersfield Town", "Inter Milan", "Juventus FC", "LOSC Lille", "Le Havre AC",
+                                    "Leeds United","Leicester City", "Levante UD", "Liverpool FC", "Luton Town",
+                                    "Manchester City", "Manchester United", "Montpellier HSC", "Málaga CF",
+                                    "Newcastle United", "Norwich City", "Nottingham Forest", "Nîmes Olympique",
+                                    "OGC Nice", "Olympique Lyon", "Olympique Marseille", "Paris Saint-Germain",
+                                    "Parma Calcio 1913", "RB Leipzig", "RC Lens", "RC Strasbourg Alsace", 
+                                    "RCD Espanyol Barcelona", "RCD Mallorca", "Rayo Vallecano", 
+                                    "Real Betis Balompié", "Real Madrid", "Real Sociedad", "Real Valladolid CF",
+                                    "SC Freiburg", "SC Paderborn 07", "SD Eibar", "SD Huesca",
+                                    "SM Caen", "SPAL", "SS Lazio", "SSC Napoli", "SV Darmstadt 98", 
+                                    "SV Werder Bremen", "Sevilla FC", "Sheffield United", "Southampton FC",
+                                    "SpVgg Greuther Fürth", "Spezia Calcio", "Stade Brestois 29",
+                                    "Stade Reims", "Stade Rennais FC", "Stoke City", "Swansea City",
+                                    "TSG 1899 Hoffenheim", "Torino FC", "Tottenham Hotspur", "UC Sampdoria",
+                                    "UD Almería", "UD Las Palmas", "US Cremonese", "US Lecce", "US Salernitana 1919",
+                                    "US Sassuolo", "Udinese Calcio","Valencia CF", "Venezia FC", "VfB Stuttgart",
+                                    "VfL Bochum", "VfL Wolfsburg", "Villarreal CF","Watford FC", 
+                                    "West Bromwich Albion", "West Ham United", "Wolverhampton Wanderers"
+                    ),
+  standardized_name = c("Heidenheim", "Köln", "Nürnberg", "Union Berlin", "Mainz 05", "Ajaccio",
+			 "Milan", "Monza", "Fiorentina", "Bournemouth", "Auxerre", "Monaco",
+			"Roma",  "Saint-Étienne", "Amiens", "Angers", "Arminia", "Arsenal",
+			"Aston Villa", "Atalanta", "Athletic Club", "Atlético Madrid", "Leverkusen", "Bayern Munich",
+			"Benevento", "Bologna", "Dortmund", "M'Gladbach", "Brentford", "Brescia",
+			"Brighton", "Burnley", "Osasuna", "Leganés", "Cagliari", "Cardiff City",
+			"Celta Vigo", "Chelsea", "Chievo", "Clermont Foot", "Crystal Palace", "Cádiz",
+			"Alavés", "La Coruña", "Dijon", "Guingamp", "Troyes", "Eint Frankfurt",
+			"Elche", "Everton", "Augsburg", "Barcelona", "Crotone", "Empoli",
+			"Bordeaux", "Lorient", "Metz", "Nantes", "Schalke 04", "Toulouse",
+			"Düsseldorf", "Frosinone", "Fulham", "Genoa", "Getafe", "Girona",
+			"Granada", "Hamburger SV", "Hannover 96", "Hellas Verona", "Hertha BSC", "Huddersfield",
+			"Inter", "Juventus", "Lille", "Le Havre", "Leeds United", "Leicester City",
+			"Levante", "Liverpool", "Luton Town", "Manchester City", "Manchester Utd", "Montpellier",
+			"Málaga", "Newcastle Utd", "Norwich City", "Nott'ham Forest", "Nîmes", "Nice",
+			"Lyon", "Marseille", "Paris S-G", "Parma", "RB Leipzig", "Lens",
+			"Strasbourg", "Espanyol", "Mallorca", "Rayo Vallecano", "Betis", "Real Madrid",
+			"Real Sociedad", "Valladolid", "Freiburg", "Paderborn 07", "Eibar", "Huesca",
+			"Caen", "SPAL", "Lazio", "Napoli", "Darmstadt 98", "Werder Bremen",
+			"Sevilla", "Sheffield Utd", "Southampton", "Greuther Fürth", "Spezia", "Brest",
+			"Reims", "Rennes", "Stoke City", "Swansea City", "Hoffenheim", "Torino",
+			"Tottenham", "Sampdoria", "Almería", "Las Palmas", "Cremonese", "Lecce",
+			"Salernitana", "Sassuolo", "Udinese", "Valencia", "Venezia", "Stuttgart",
+			"Bochum", "Wolfsburg", "Villareal", "Watford", "West Brom", "West Ham", "Wolves")
 )
 
 ```
@@ -957,12 +987,6 @@ range(managers_index_final$DW_norm, na.rm=TRUE)
 range(managers_index_final$Weight_norm, na.rm=TRUE)
 
 managers_index_final$mandex <- (managers_index_final$DW_norm- managers_index_final$Weight_norm)/managers_index_final$Weight_norm
-print(managers_index_final)
-
-allegri <- managers_index_final[managers_index_final$manager == "Massimiliano Allegri",]
-print(allegri)
-juve <- df_wage[df_wage$Team.x == "Juventus",]
-print(juve)
 managers_index_final <- managers_index_final[order(-managers_index_final$mandex),]
 ```
 
@@ -982,10 +1006,48 @@ managers_index_all_seasons$corrected_index <- managers_index_all_seasons$index/(
 managers_index_all_seasons$readable_index <- managers_index_all_seasons$corrected_index*100
 managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$readable_index),]
 
-print(managers_index_all_seasons[managers_index_all_seasons$manager == "Steve Cooper",])
+print(managers_index_all_seasons)
+
+ggplot(data = managers_index_all_seasons, aes(x=corrected_index))+geom_histogram(col="black", fill="gray78", binwidth=0.005)+geom_density(size=1.1, col="red")+theme_classic()
+
+t.test(managers_index_all_seasons$corrected_index)
+skewness(managers_index_all_seasons$corrected_index)
+kurtosis(managers_index_all_seasons$corrected_index)
+
 ```
+
+
+## Charts necessary for paper
+
+```{r}
+managerELO$manager <- managerELO$Manager
+ELOvsINDEX <- left_join(managers_index_all_seasons, managerELO, by = "manager")
+cor.test(ELOvsINDEX$Coach.Rating, ELOvsINDEX$corrected_index)
+```
+
+## Plotting this correlation
+
+```{r}
+# Calculate Pearson correlation, ignoring NA values
+pearson_corr <- cor(ELOvsINDEX$corrected_index, ELOvsINDEX$Coach.Rating, use = "complete.obs")
+
+# Create the ggplot with increased text size
+ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
+  geom_point(col = "black") +
+  geom_smooth(method = "lm", se = FALSE, col="firebrick") +
+  xlab("Index Value") +
+  ylab("ELO") +
+  theme_apa() +
+  geom_text(aes(x = 0.25, y = 1950, label = paste("r =", round(pearson_corr, 4))), 
+            size = 5, color = "black", hjust = 0) +  # Adjust text size for the correlation label
+  theme(
+    axis.title.x = element_text(size = 16),   # X-axis title text size
+    axis.title.y = element_text(size = 16),   # Y-axis title text size
+    axis.text.x = element_text(size = 14),    # X-axis labels text size
+    axis.text.y = element_text(size = 14),    # Y-axis labels text size
+    plot.title = element_text(size = 20, face = "bold")  # Plot title text size (optional)
+  )
 
 ### Interesting Data Visualizations that are possible with existing data
 
-
-
+```
