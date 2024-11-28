@@ -22,6 +22,8 @@ library(stargazer)
 library(stringi)
 library(ellipsis)
 library(moments)
+install.packages("modelsummary")
+library(modelsummary)
 ```
 
 
@@ -239,16 +241,14 @@ lags <- lags %>%
 ## A couple of prediction models, selected from a larger suite. Linear Model 2 is used as prediction algorithm moving forward
 
 ```{r}
-lm1 <- lm(DAVIES ~ WeeklyWageEUR+League, df_wage)
-lm2 <- lm(DAVIES ~ WeeklyWageEUR+League+Min, lags)
-lm3 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season, lags)
-lm4 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season+stats_2_seasons_ago, lags)
+lm1 <- lm(DAVIES ~ WeeklyWageEUR+Age+League, df_wage)
+lm2 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role, lags)
+lm3 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role+stats_last_season, lags)
+lm4 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role+stats_last_season+stats_2_seasons_ago, lags)
 
 lm_wages <- lm(WeeklyWageEUR ~ Team.x+Season.Age+Gen..Role, df_wage)
-summary(lm_wages)
-colnames(df_wage)
 
-## stargazer(lm1,lm2,lm3,lm4) can be used to visualize these models and their relative performance if desired
+stargazer(lm1,lm2,lm3,lm4, type="text")
 
 ```
 # Generate a wage predictive algorithm here based on the lm_wages above, giving us an indication of what these players wages would have been. Its fidelity could be debated but it has an adjusted R^2 of 0.4831 which is sufficient for our purposes given that the quality of player that we are looking at here skews younger and will have less influence on our final results.
@@ -341,7 +341,6 @@ managers <- left_join(Managers_DAVIES, data_plus_predictions, join_by(League, Ge
 lm5 <- lm(Z.x ~ Manager+Z_predicted, data=managers)
 lm6 <- lm(DAVIES_weighted.y ~ Manager + weighted_predictions, managers)
 
-summary(lm5)
 
 lm6 <- lm(DAVIES_weighted.y ~ weighted_predictions, managers)
 
@@ -458,9 +457,6 @@ man_total <- left_join(dpp2, managers2, join_by(League, Team, Season))
 lm5 <- lm(Z ~ Manager+Z_predicted, data=man_total)
 lm6 <- lm(DAVIES_weighted ~ Manager + weighted_predictions, man_total)
 
-summary(lm5)
-summary(lm6)
-
 range(man_total$DAVIES_weighted, na.rm=TRUE)
 range(man_total$weighted_predictions, na.rm=TRUE)
 
@@ -541,20 +537,14 @@ ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
 ```{r}
 
 correlation <- cor(df_predict$predicted_stats, df_predict$DAVIES, use="complete.obs")
-ggplot(df_predict, aes(x = predicted_stats, y = DAVIES)) +
-  geom_point(col = "black") +
+davies_vs_prediction <- ggplot(df_predict, aes(x = predicted_stats, y = DAVIES)) +
+  geom_point(col = "black", size=0.25) +
   geom_smooth(method = "lm", se = FALSE, col="firebrick") +
   xlab("DAVIES Prediction") +
   ylab("Observed Value") +
-  theme_apa()  +
-  theme(
-    axis.title.x = element_text(size = 16),   # X-axis title text size
-    axis.title.y = element_text(size = 16),   # Y-axis title text size
-    axis.text.x = element_text(size = 14),    # X-axis labels text size
-    axis.text.y = element_text(size = 14),    # Y-axis labels text size
-    plot.title = element_text(size = 20, face = "bold")  # Plot title text size (optional)
-  )
+  theme_apa()
 
+ggsave("davies_vs_prediction.png", plot=davies_vs_prediction, dpi=600, width=3, height=2)
 
 ```
 
@@ -636,8 +626,8 @@ lags_p90 <- lags_p90 %>%
 colnames(df_wage_p90)
 lm1_p <- lm(DAVIES ~ WeeklyWageEUR+League, df_wage_p90)
 lm2_p <- lm(DAVIES ~ WeeklyWageEUR+League+Age+Gen..Role, lags_p90)
-lm3_p <- lm(DAVIES ~ WeeklyWageEUR+League+stats_last_season, lags_p90)
-lm4_p <- lm(DAVIES ~ WeeklyWageEUR+League+Min+stats_last_season+stats_2_seasons_ago, lags_p90)
+lm3_p <- lm(DAVIES ~ WeeklyWageEUR+League+Age+stats_last_season, lags_p90)
+lm4_p <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+stats_last_season+stats_2_seasons_ago, lags_p90)
 
 stargazer(lm1_p,lm2_p,lm3_p,lm4_p, type="text")
 
@@ -774,8 +764,6 @@ calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0
         
         # Check if the manager was in charge for more than the threshold of the season
         if ((days_managed / days_in_season) >= threshold) {
-          print(paste(staff_name, "managed", team_name, "for", days_managed, "days in", season_name))
-          
           # Add the result to the dataframe
           result <- rbind(result, data.frame(
             team_name = team_name,
@@ -811,10 +799,6 @@ attributed_managers <- attributed_managers %>%
 attributed_managers <- attributed_managers %>%
   arrange(team_name)
 
-print(attributed_managers)
-
-unique(attributed_managers$team_name)
-unique(data_plus_predictions$Team)
 ```
 
 Now need to make sure the team names match up between the DAVIES data and the Transfermarkt data, which I know for a fact they do not in many instances. Chelsea FC vs just Chelsea for example, Olympique Lyon vs Lyonnais vs just Lyon.
@@ -1008,7 +992,9 @@ managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_a
 
 print(managers_index_all_seasons)
 
-ggplot(data = managers_index_all_seasons, aes(x=corrected_index))+geom_histogram(col="black", fill="gray78", binwidth=0.005)+geom_density(size=1.1, col="red")+theme_classic()
+dist_plot_index <- ggplot(data = managers_index_all_seasons, aes(x=corrected_index))+geom_histogram(col="black", fill="gray78", binwidth=0.005)+geom_density(size=1.1, col="red")+theme_apa()+xlab("Index Value")+ylab("Frequency")+geom_vline(xintercept=mean(managers_index_all_seasons$corrected_index), linetype="dashed", col="black", size=0.9)
+
+ggsave("dist_plot_index.png", plot=dist_plot_index, dpi=600)
 
 t.test(managers_index_all_seasons$corrected_index)
 skewness(managers_index_all_seasons$corrected_index)
@@ -1032,21 +1018,18 @@ cor.test(ELOvsINDEX$Coach.Rating, ELOvsINDEX$corrected_index)
 pearson_corr <- cor(ELOvsINDEX$corrected_index, ELOvsINDEX$Coach.Rating, use = "complete.obs")
 
 # Create the ggplot with increased text size
-ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
-  geom_point(col = "black") +
+index_vs_ELO <- ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
+  geom_point(col = "black", size=0.25) +
   geom_smooth(method = "lm", se = FALSE, col="firebrick") +
   xlab("Index Value") +
   ylab("ELO") +
   theme_apa() +
   geom_text(aes(x = 0.25, y = 1950, label = paste("r =", round(pearson_corr, 4))), 
-            size = 5, color = "black", hjust = 0) +  # Adjust text size for the correlation label
-  theme(
-    axis.title.x = element_text(size = 16),   # X-axis title text size
-    axis.title.y = element_text(size = 16),   # Y-axis title text size
-    axis.text.x = element_text(size = 14),    # X-axis labels text size
-    axis.text.y = element_text(size = 14),    # Y-axis labels text size
-    plot.title = element_text(size = 20, face = "bold")  # Plot title text size (optional)
-  )
+            size = 2, color = "black", hjust = 0)  # Adjust text size for the correlation label
+
+
+ggsave("index_vs_ELO.png", plot=index_vs_ELO, dpi=600, width=3, height=2)
+
 
 ### Interesting Data Visualizations that are possible with existing data
 
