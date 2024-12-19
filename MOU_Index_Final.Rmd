@@ -1,0 +1,876 @@
+---
+title: "MOU_Index_Final"
+output: html_document
+date: "2024-12-18"
+---
+
+## The Mou Index
+
+This document generates the values and graphics necessary to replicate the "MOU Index" Paper as submitted to MIT Sloan Sports Analytics Conference 2025.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(gcookbook)
+library(ggrepel)
+library(ggsci)
+library(dplyr)
+library(ggthemes)
+library(lubridate)
+library(NLP)
+library(ggrepel)
+library(worldfootballR)
+library(jtools)
+library(pwr)
+library(ggalt)
+library(stargazer)
+library(stringi)
+library(ellipsis)
+library(moments)
+install.packages("modelsummary")
+library(modelsummary)
+```
+
+
+## Loading Data. In this instance just replace the read.csv with the command to access your personal version of this file.
+
+```{r data}
+DAVIESdata.2024.04.02 <- read.csv("~/DAVIESdata-2017-2024-raw.csv")
+df <- DAVIESdata.2024.04.02
+```
+
+## Calculate Team Aggregates on DAVIES data (Minutes weighted)
+
+```{r}
+df_group <- df %>% group_by(League, Team, Season, Gen..Role) %>% 
+    summarise(DAVIES_TOTAL = sum(DAVIES), 
+              DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+```
+
+## Calculate League averages, STDevs and Vars for the same values. This is for alternative specifications.
+
+```{r}
+df_2 <- df_group %>% group_by(League, Season, Gen..Role) %>%
+    summarise(League_DAVIES = mean(DAVIES_weighted),
+              Raw_League_DAVIES = mean(DAVIES_TOTAL),
+              SD_League = sd(DAVIES_weighted),
+              Raw_SD_League = sd(DAVIES_TOTAL))
+```
+
+## Join these two datasets and create a Z score for each Team and Role for any future analysis
+
+```{r}
+df_together <- left_join(df_group,df_2, join_by(League, Season, Gen..Role))
+
+
+df_together$Z <- (df_together$DAVIES_weighted - df_together$League_DAVIES)/df_together$SD_League
+```
+Now I want to add wages to the player data, which I'll do from scraping FBRef. This code does  a few different things. It firstly takes the nations that I would like it to (top 5 leagues) and gets league URLS for it for every year in the sample. It then scrapes these league sites for the team urls. It then scrapes wage data for all available team_urls, converts it into a single value from its initial state as a length one vector and then saves it as a csv which will be called instead from now on. This code can be skipped if there is a link to the csv. 
+
+```{r, eval=FALSE, echo=FALSE}
+
+
+nations <- c("GER", "ENG", "FRA", "ESP", "ITA")
+
+league_urls <- c()
+
+for (year in 2018:2024){
+  for (nation in nations){
+    new_urls <- fb_league_urls(country=nation, gender = "M", year, tier = "1st")
+    league_urls <- c(league_urls, new_urls)
+  }
+}
+
+team_urls <- c()
+for (league in league_urls){
+  new_urls <- fb_teams_urls(league, time_pause=3)
+  team_urls <- c(team_urls, new_urls)
+}
+
+
+team_urls[team_urls != "https://fbref.com/en/squads/60b5e41f/2017-2018/Hannover-96-Stats"]
+
+wage_data = data.frame()
+
+get_wages <- function(urls, df){
+  tryCatch(
+    {
+      for (url in urls){
+        stringurl <- as.String(url)
+        new_df <- fb_squad_wages(team_urls = url, time_pause = 5)
+        df <- rbind(df, new_df)
+      }
+      error = function(e) {
+        print(stringurl + " failed")
+        print(e)
+      }
+      return(df)
+    }
+  )
+}
+wage_data <- get_wages(team_urls, wage_data)
+
+
+wage_data = data.frame()
+
+get_wages <- function(urls, df){
+  results_list <- list()  
+  for (url in urls) {
+    tryCatch({
+      new_df <- fb_squad_wages(team_urls = url, time_pause = 5)
+      results_list[[url]] <- new_df
+    }, error = function(e) {
+      print(paste(url, "failed"))
+      print(e$message)  
+    })
+  }
+ 
+  df <- do.call(rbind, results_list)
+  return(df)
+}
+
+
+wage_data <- get_wages(team_urls, wage_data)
+
+wage_data$WeeklyWageEUR <- as.String(wage_data$WeeklyWageEUR)
+
+wage_data$WeeklyWageEUR <- sapply(wage_data$WeeklyWageEUR, function(x) { x[[1]] })
+wage_data$WeeklyWageGBP <- sapply(wage_data$WeeklyWageGBP, function(x) { x[[1]] })
+wage_data$WeeklyWageUSD <- sapply(wage_data$WeeklyWageUSD, function(x) { x[[1]] })
+wage_data$AnnualWageEUR <- sapply(wage_data$AnnualWageEUR, function(x) { x[[1]] })
+wage_data$AnnualWageGBP <- sapply(wage_data$AnnualWageGBP, function(x) { x[[1]] })
+wage_data$AnnualWageUSD <- sapply(wage_data$AnnualWageUSD, function(x) { x[[1]] })
+
+write.csv(wage_data, "wage_data.csv", row.names=FALSE)
+
+```
+
+
+## Use preprepared wage data instead of scraping
+
+```{r}
+wage_data <- read.csv("~/wage_data.csv")
+```
+
+
+## Transformations to alter wage data storage for future manipulation
+
+```{r}
+
+wage_data[] <- lapply(wage_data, function(x) if (is.list(x)) sapply(x, function(y) y[[1]], simplify = "vector") else x)
+
+sapply(wage_data, is.list)
+
+wage_data$WeeklyWageEUR <- sapply(wage_data$WeeklyWageEUR, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageEUR <- vapply(wage_data$WeeklyWageEUR, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageGBP<- sapply(wage_data$WeeklyWageGBP, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageGBP <- vapply(wage_data$WeeklyWageGBP, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageUSD <- sapply(wage_data$WeeklyWageUSD, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$WeeklyWageUSD <- vapply(wage_data$WeeklyWageUSD, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageEUR <- sapply(wage_data$AnnualWageEUR, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageEUR <- vapply(wage_data$AnnualWageEUR, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageGBP <- sapply(wage_data$AnnualWageGBP, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageGBP <- vapply(wage_data$AnnualWageGBP, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$AnnualWageUSD <- sapply(wage_data$AnnualWageUSD, function(x) {
+  if (length(x) == 0 || is.null(x[[1]])) NA else as.numeric(x[[1]])
+})
+
+wage_data$AnnualWageUSD <- vapply(wage_data$AnnualWageUSD, function(x) {
+  if (length(x) > 0 && !is.null(x[[1]])) as.numeric(x[[1]]) else NA
+}, numeric(1))
+
+wage_data$WeeklyWageEUR <- wage_data$WeeklyWageEUR_num
+```
+
+## Add wage data to the original dataframe by player and season
+
+```{r}
+df_wage <- left_join(df, wage_data, by=c("Player", "Season"))
+```
+
+
+## Add in lags variables for previous seasons performance in order to figure out prediction models
+
+```{r}
+lags <- df_wage
+
+lags <- lags %>%
+  arrange(Player, Season) %>%
+  group_by(Player) %>%       
+  mutate(
+    stats_last_season = lag(DAVIES, 1),  
+    stats_2_seasons_ago = lag(DAVIES, 2),   
+    stats_3_seasons_ago = lag(DAVIES, 3),  
+    stats_4_seasons_ago = lag(DAVIES, 4),   
+    stats_5_seasons_ago = lag(DAVIES, 5),   
+    stats_6_seasons_ago = lag(DAVIES, 6)    
+  ) %>%
+  ungroup()  
+```
+
+
+## A couple of prediction models, selected from a larger suite. Linear Model 2 is used as prediction algorithm moving forward
+
+```{r}
+lm1 <- lm(DAVIES ~ WeeklyWageEUR+Age+League, df_wage)
+lm2 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role, lags)
+lm3 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role+stats_last_season, lags)
+lm4 <- lm(DAVIES ~ WeeklyWageEUR+League+Min+Age+Gen..Role+stats_last_season+stats_2_seasons_ago, lags)
+
+stargazer(lm1,lm2,lm3,lm4, type="text")
+
+```
+
+# Generate a wage predictive algorithm here based on the lm_wages, giving us an indication of what these players wages would have been. Its fidelity could be debated but it has an adjusted R^2 of 0.4831 which is sufficient for our purposes given that the quality of player that we are looking at here skews younger and will have less influence on our final results.
+
+```{r}
+
+lm_wages <- lm(WeeklyWageEUR ~ Team.x+Season.Age+Gen..Role, df_wage)
+
+na_indices <- which(is.na(df_wage$WeeklyWageEUR)) 
+predicted_values <- predict(lm_wages, newdata = df_wage[na_indices, ])
+
+stargazer(lm_wages, type="text")
+
+df_wage$WeeklyWageEUR[na_indices] <- predicted_values
+
+
+```
+
+
+## Generate Predictions for as many players as possible. Debatable assumption made here: players who do not have data from the previous season are assumed to have been purely average for their age, scoring a 0.
+
+```{r}
+
+lags2 <- lags
+
+interested_leagues <- c("Premier League", "La Liga", "Serie A M", "Bundesliga", "Ligue 1")
+
+
+filtered_lags2 <- lags2 %>%
+  filter(League %in% interested_leagues)
+
+
+df_predict <- filtered_lags2 %>%
+  mutate(across(starts_with("stats"), ~replace_na(., 0)))
+
+
+df_predict$predicted_stats <- predict(lm2, newdata = filtered_lags2, type = "response")
+
+```
+
+
+## Grouping these predictions by position group and league averages, much like I did for current season performance.
+
+```{r}
+grouped_predictions <- df_predict %>% group_by(League, Team.x, Season, Gen..Role) %>% 
+  summarise(predicted_stats = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+league_predictions <- grouped_predictions %>% group_by(League, Season, Gen..Role) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predicted_stats),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predicted_stats))
+
+
+predictions_together <- left_join(grouped_predictions, league_predictions, join_by(League, Season, Gen..Role))
+```
+
+## Slight cleaning to make future analysis easier
+
+```{r}
+
+predictions_together$Z_predicted <- ifelse(predictions_together$SD_predictions > 0, (predictions_together$weighted_predictions - predictions_together$League_predictions)/predictions_together$SD_predictions, 0)
+
+predictions_together$Team <- predictions_together$Team.x
+```
+
+## Combined data
+
+```{r}
+data_plus_predictions <- left_join(df_together, predictions_together, join_by(Team, Season, Gen..Role))
+```
+
+
+### Downloading Manager Data
+
+```{r, eval=FALSE}
+leagues <- c("Spain", "Germany", "France", "Italy", "England")  
+
+years <- 2017:2023  
+
+all_teams_list <- list()
+
+for (league in leagues) {
+  for (year in years) {
+    team_urls <- tm_league_team_urls(country_name = league, start_year = year)
+    
+    league_df <- data.frame(
+      league = league,
+      year = year,
+      team_url = team_urls,
+      stringsAsFactors = FALSE
+    )
+    
+    all_teams_list <- append(all_teams_list, list(league_df))
+  }
+}
+
+all_teams <- do.call(rbind, all_teams_list)
+all_teams <- unique(all_teams)
+print(all_teams)
+club_manager_history <- tm_team_staff_history(team_urls = all_teams$team_url, staff_role = "Manager")
+dplyr::glimpse(club_manager_history)
+
+club_manager_history
+
+write.csv(club_manager_history, file= "club_manager_history.csv")
+
+```
+
+```{r}
+club_manager_history <- read.csv("~/club_manager_history.csv")
+```
+
+
+# Player Valuation Data, which is not used in initial analysis but can be used for controls in future iterations. Player values are imperfectly calculated and not truly empirical so they must be taken with a grain of salt compared to wage data.
+
+```{r}{eval=FALSE}
+ big_5_valuations <- tm_player_market_values(country_name = c("England", "Spain", "Italy", "France", "Germany"),
+                                        start_year = 2017:2023)
+big_5_valuations
+
+```
+
+## Calculating Manager attribution with a variable threshold
+
+
+# First putting in season dates
+
+```{r}
+season_start_dates <- as.Date(c('2017-08-01', '2018-08-01', '2019-08-01', 
+                                '2020-08-01', '2021-08-01', '2022-08-01', 
+                                '2023-08-01'))
+season_end_dates <- as.Date(c('2018-07-31', '2019-07-31', '2020-07-31', 
+                              '2021-07-31', '2022-07-31', '2023-07-31', 
+                              '2024-07-31'))
+seasons <- data.frame(
+  season = c("2017/2018", "2018/2019", "2019/2020", "2020/2021", 
+             "2021/2022", "2022/2023", "2023/2024"),
+  start_date = season_start_dates,
+  end_date = season_end_dates
+)
+
+```
+
+```{r}
+calculate_manager_attribution <- function(managers_df, seasons_df, threshold = 0.5) {
+  # Check if columns exist in the managers dataframe
+  if (!all(c("team_name", "staff_name", "appointed", "end_date") %in% colnames(managers_df))) {
+    stop("Error: One or more required columns are missing from the managers dataframe.")
+  }
+  
+  # Convert relevant columns to Date format if not already
+  managers_df$appointed <- as.Date(managers_df$appointed, format = "%d/%m/%Y")
+  managers_df$end_date <- as.Date(managers_df$end_date, format = "%d/%m/%Y")
+  seasons_df$start_date <- as.Date(seasons_df$start_date)
+  seasons_df$end_date <- as.Date(seasons_df$end_date)
+  
+  # Initialize an empty result dataframe
+  result <- data.frame(team_name = character(), staff_name = character(), season = character(), stringsAsFactors = FALSE)
+  
+  for (i in 1:nrow(seasons_df)) {
+    # Get the current season's start and end dates
+    season_start <- as.Date(seasons_df$start_date[i])
+    season_end <- as.Date(seasons_df$end_date[i])
+    season_name <- seasons_df$season[i]
+    
+    for (j in 1:nrow(managers_df)) {
+      # Access each manager's tenure and team/staff information explicitly with managers_df$
+      appointed <- managers_df$appointed[j]
+      end_date <- managers_df$end_date[j]
+      
+      if (is.na(end_date)){
+        end_date <- now()
+      }
+      team_name <- managers_df$team_name[j]
+      staff_name <- managers_df$staff_name[j]
+      
+      
+      # Handle missing values for appointed/end dates
+      if (is.na(appointed)) next  # If appointed date is NA, skip
+      
+      # Calculate the overlap between the manager's tenure and the season
+      if (appointed < season_end) {
+        if(appointed >= season_start)
+          overlap_start <- appointed
+        else
+          overlap_start <- season_start
+      }
+      else
+        overlap_start <- NA
+      
+      if(end_date > season_start){
+        if (end_date < season_end)
+          overlap_end <- end_date
+        else
+          overlap_end <- season_end
+      }
+      else
+        overlap_end <- NA
+      
+      # Ensure the overlap is valid
+      if (!is.na(overlap_start) && !is.na(overlap_end) && overlap_start < overlap_end) {
+        days_in_season <- as.numeric(season_end - season_start) + 1
+        days_managed <- as.numeric(overlap_end - overlap_start) + 1
+
+        
+        # Check if the manager was in charge for more than the threshold of the season
+        if ((days_managed / days_in_season) >= threshold) {
+          # Add the result to the dataframe
+          result <- rbind(result, data.frame(
+            team_name = team_name,
+            staff_name = staff_name,
+            season = season_name,
+            stringsAsFactors = FALSE
+          ))
+        }
+      }
+    }
+  }
+  
+  return(result)
+}
+
+# Example: Apply the function to the manager and season dataframes
+
+attributed_managers <- calculate_manager_attribution(club_manager_history, seasons, threshold = 0.501)
+print(attributed_managers[attributed_managers$team_name == "Chelsea FC",])
+```
+
+# Rename columns and prepare the data to be matched up properly
+
+```{r}
+attributed_managers <- attributed_managers %>%
+  rename(manager = staff_name) %>%
+  mutate(manager = stri_trans_general(manager, "Latin-ASCII"))
+
+attributed_managers <- attributed_managers %>%
+  arrange(team_name)
+
+```
+
+Now need to make sure the team names match up between the DAVIES data and the Transfermarkt data, which I know for a fact they do not in many instances. Chelsea FC vs just Chelsea for example, Olympique Lyon vs Lyonnais vs just Lyon.
+
+
+
+## Fixing the team names together
+
+```{r}
+
+
+mapping <- data.frame(
+  original_name = c("1.FC Heidenheim 1846", "1.FC Köln", "1.FC Nuremberg", "1.FC Union Berlin",
+                                    "1.FSV Mainz 05", "AC Ajaccio", "AC Milan", "AC Monza", "ACF Fiorentina",
+                                    "AFC Bournemouth", "AJ Auxerre", "AS Monaco", "AS Roma","AS Saint-Étienne",
+                                    "Amiens SC", "Angers SCO", "Arminia Bielefeld", "Arsenal FC", "Aston Villa",
+                                    "Atalanta BC", "Athletic Bilbao","Atlético de Madrid", "Bayer 04 Leverkusen",
+                                    "Bayern Munich", "Benevento Calcio", "Bologna FC 1909", "Borussia Dortmund",
+                                    "Borussia Mönchengladbach", "Brentford FC", "Brescia Calcio", 
+                                    "Brighton & Hove Albion","Burnley FC","CA Osasuna","CD Leganés",
+                                    "Cagliari Calcio","Cardiff City", "Celta de Vigo", "Chelsea FC","Chievo Verona",
+                                    "Clermont Foot 63","Crystal Palace","Cádiz CF", "Deportivo Alavés",
+                                    "Deportivo de La Coruña", "Dijon FCO", "EA Guingamp", "ESTAC Troyes",
+                                    "Eintracht Frankfurt", "Elche CF", "Everton FC", "FC Augsburg", "FC Barcelona",
+                                    "FC Crotone", "FC Empoli", "FC Girondins Bordeaux","FC Lorient", "FC Metz", 
+                                    "FC Nantes","FC Schalke 04", "FC Toulouse", "Fortuna Düsseldorf", 
+                                    "Frosinone Calcio", "Fulham FC", "Genoa CFC", "Getafe CF","Girona FC",
+                                    "Granada CF","Hamburger SV", "Hannover 96", "Hellas Verona", "Hertha BSC",
+                                    "Huddersfield Town", "Inter Milan", "Juventus FC", "LOSC Lille", "Le Havre AC",
+                                    "Leeds United","Leicester City", "Levante UD", "Liverpool FC", "Luton Town",
+                                    "Manchester City", "Manchester United", "Montpellier HSC", "Málaga CF",
+                                    "Newcastle United", "Norwich City", "Nottingham Forest", "Nîmes Olympique",
+                                    "OGC Nice", "Olympique Lyon", "Olympique Marseille", "Paris Saint-Germain",
+                                    "Parma Calcio 1913", "RB Leipzig", "RC Lens", "RC Strasbourg Alsace", 
+                                    "RCD Espanyol Barcelona", "RCD Mallorca", "Rayo Vallecano", 
+                                    "Real Betis Balompié", "Real Madrid", "Real Sociedad", "Real Valladolid CF",
+                                    "SC Freiburg", "SC Paderborn 07", "SD Eibar", "SD Huesca",
+                                    "SM Caen", "SPAL", "SS Lazio", "SSC Napoli", "SV Darmstadt 98", 
+                                    "SV Werder Bremen", "Sevilla FC", "Sheffield United", "Southampton FC",
+                                    "SpVgg Greuther Fürth", "Spezia Calcio", "Stade Brestois 29",
+                                    "Stade Reims", "Stade Rennais FC", "Stoke City", "Swansea City",
+                                    "TSG 1899 Hoffenheim", "Torino FC", "Tottenham Hotspur", "UC Sampdoria",
+                                    "UD Almería", "UD Las Palmas", "US Cremonese", "US Lecce", "US Salernitana 1919",
+                                    "US Sassuolo", "Udinese Calcio","Valencia CF", "Venezia FC", "VfB Stuttgart",
+                                    "VfL Bochum", "VfL Wolfsburg", "Villarreal CF","Watford FC", 
+                                    "West Bromwich Albion", "West Ham United", "Wolverhampton Wanderers"
+                    ),
+  standardized_name = c("Heidenheim", "Köln", "Nürnberg", "Union Berlin", "Mainz 05", "Ajaccio",
+			 "Milan", "Monza", "Fiorentina", "Bournemouth", "Auxerre", "Monaco",
+			"Roma",  "Saint-Étienne", "Amiens", "Angers", "Arminia", "Arsenal",
+			"Aston Villa", "Atalanta", "Athletic Club", "Atlético Madrid", "Leverkusen", "Bayern Munich",
+			"Benevento", "Bologna", "Dortmund", "M'Gladbach", "Brentford", "Brescia",
+			"Brighton", "Burnley", "Osasuna", "Leganés", "Cagliari", "Cardiff City",
+			"Celta Vigo", "Chelsea", "Chievo", "Clermont Foot", "Crystal Palace", "Cádiz",
+			"Alavés", "La Coruña", "Dijon", "Guingamp", "Troyes", "Eint Frankfurt",
+			"Elche", "Everton", "Augsburg", "Barcelona", "Crotone", "Empoli",
+			"Bordeaux", "Lorient", "Metz", "Nantes", "Schalke 04", "Toulouse",
+			"Düsseldorf", "Frosinone", "Fulham", "Genoa", "Getafe", "Girona",
+			"Granada", "Hamburger SV", "Hannover 96", "Hellas Verona", "Hertha BSC", "Huddersfield",
+			"Inter", "Juventus", "Lille", "Le Havre", "Leeds United", "Leicester City",
+			"Levante", "Liverpool", "Luton Town", "Manchester City", "Manchester Utd", "Montpellier",
+			"Málaga", "Newcastle Utd", "Norwich City", "Nott'ham Forest", "Nîmes", "Nice",
+			"Lyon", "Marseille", "Paris S-G", "Parma", "RB Leipzig", "Lens",
+			"Strasbourg", "Espanyol", "Mallorca", "Rayo Vallecano", "Betis", "Real Madrid",
+			"Real Sociedad", "Valladolid", "Freiburg", "Paderborn 07", "Eibar", "Huesca",
+			"Caen", "SPAL", "Lazio", "Napoli", "Darmstadt 98", "Werder Bremen",
+			"Sevilla", "Sheffield Utd", "Southampton", "Greuther Fürth", "Spezia", "Brest",
+			"Reims", "Rennes", "Stoke City", "Swansea City", "Hoffenheim", "Torino",
+			"Tottenham", "Sampdoria", "Almería", "Las Palmas", "Cremonese", "Lecce",
+			"Salernitana", "Sassuolo", "Udinese", "Valencia", "Venezia", "Stuttgart",
+			"Bochum", "Wolfsburg", "Villareal", "Watford", "West Brom", "West Ham", "Wolves")
+)
+
+```
+
+## And replacing them in the dataset
+
+```{r}
+attributed_managers <- attributed_managers %>%
+  left_join(mapping, by = c("team_name" = "original_name")) %>%
+  mutate(team_name = ifelse(is.na(standardized_name), team_name, standardized_name)) %>%
+  select(-standardized_name)  
+
+attributed_managers$season <- gsub("/", "-", attributed_managers$season)
+
+attributed_managers <- attributed_managers %>%
+  rename(
+    Team = team_name,
+    Season = season
+  )
+attributed_managers <- unique(attributed_managers)
+print(attributed_managers)
+
+```
+
+
+
+# Join my new manager database to the original, and replicate the code to create a more accurate manager index
+
+```{r}
+managers <- left_join(data_plus_predictions, attributed_managers, by=c("Team", "Season"))
+
+print(managers)
+```
+
+# Calculating total manager index values based on this
+
+```{r}
+team.stats.no.pos.groups <- df %>% group_by(League, Team, Season) %>% 
+  summarise(DAVIES_TOTAL = sum(DAVIES), 
+            DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+
+league.stats.no.pos.groups <- team.stats.no.pos.groups %>% group_by(League, Season) %>%
+  summarise(League_DAVIES = mean(DAVIES_weighted),
+            Raw_League_DAVIES = mean(DAVIES_TOTAL),
+            SD_League = sd(DAVIES_weighted),
+            Raw_SD_League = sd(DAVIES_TOTAL))
+
+team.stats.with.league <- left_join(team.stats.no.pos.groups,league.stats.no.pos.groups, join_by(League, Season))
+team.stats.with.league$Z <- (team.stats.with.league$DAVIES_weighted - team.stats.with.league$League_DAVIES)/team.stats.with.league$SD_League
+```
+# Now add in predictions
+
+```{r}
+team.predictions.no.pos.groups <- df_predict %>% group_by(League, Team.x, Season) %>% 
+  summarise(predictions = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+league.predictions.no.pos.groups <- team.predictions.no.pos.groups %>% group_by(League, Season) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predictions),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predictions))
+
+
+joint.team.predictions <- left_join(team.predictions.no.pos.groups, league.predictions.no.pos.groups, join_by(League, Season))
+
+
+joint.team.predictions$Z_predicted <- ifelse(joint.team.predictions$SD_predictions > 0, (joint.team.predictions$weighted_predictions - joint.team.predictions$League_predictions)/joint.team.predictions$SD_predictions, 0)
+
+joint.team.predictions$Team <- joint.team.predictions$Team.x
+
+print(joint.team.predictions)
+
+team.based.statistics <- left_join(team.stats.with.league, joint.team.predictions, join_by(Team, Season))
+
+team.based.statistics$League <- team.based.statistics$League.x
+```
+
+# Now can bind with manager data to start to attribute to managers
+
+```{r}
+
+managers_index_final <- left_join(team.based.statistics, attributed_managers, join_by(Team, Season))
+
+```
+
+# Generate manager index values by season
+
+```{r}
+managers_index_final$DW_norm <- (managers_index_final$DAVIES_weighted+2)/7
+managers_index_final$Weight_norm <- (managers_index_final$weighted_predictions+2)/7
+
+
+range(managers_index_final$DW_norm, na.rm=TRUE)
+range(managers_index_final$Weight_norm, na.rm=TRUE)
+
+managers_index_final$mandex <- (managers_index_final$DW_norm- managers_index_final$Weight_norm)/managers_index_final$Weight_norm
+managers_index_final <- managers_index_final[order(-managers_index_final$mandex),]
+```
+
+# Aggregate these by manager to then find the final index, corrected for seasons
+
+```{r}
+
+managers_index_all_seasons <- managers_index_final%>% group_by(manager) %>%
+  summarise(index = mean(mandex, na.rm=TRUE), count=n())
+
+managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$index),]
+
+managers_index_all_seasons$max_seasons <- 7
+
+managers_index_all_seasons$corrected_index <- managers_index_all_seasons$index/(managers_index_all_seasons$max_seasons-managers_index_all_seasons$count +1)
+
+managers_index_all_seasons$readable_index <- managers_index_all_seasons$corrected_index*100
+managers_index_all_seasons <- managers_index_all_seasons[order(-managers_index_all_seasons$readable_index),]
+
+print(managers_index_all_seasons)
+
+t.test(managers_index_all_seasons$corrected_index)
+skewness(managers_index_all_seasons$corrected_index)
+kurtosis(managers_index_all_seasons$corrected_index)
+
+mean(managers_index_all_seasons$count)
+
+```
+
+## Manager Distribution Plot
+
+```{r}
+
+dist_plot_index <- ggplot(data = managers_index_all_seasons, aes(x=corrected_index))+geom_histogram(col="black", fill="gray78", binwidth=0.005)+geom_density(size=1.1, col="red")+theme_apa()+xlab("Index Value")+ylab("Frequency")+geom_vline(xintercept=mean(managers_index_all_seasons$corrected_index), linetype="dashed", col="black", size=0.9)
+
+```
+
+
+## Distribution Statistics
+
+```{r}
+t.test(managers_index_all_seasons$corrected_index)
+skewness(managers_index_all_seasons$corrected_index)
+kurtosis(managers_index_all_seasons$corrected_index)
+
+mean(managers_index_all_seasons$count)
+```
+
+
+## Charts necessary for paper
+
+
+## Calibration by looking at Manager ELO
+
+```{r}
+
+managerELO <- read.csv("~/coaches_ranking.csv")
+
+
+managerELO$Manager <- managerELO$Name
+
+managerELO$Manager <- stri_trans_general(managerELO$Manager, "Latin-ASCII")
+
+managerELO$manager <- managerELO$Manager
+ELOvsINDEX <- left_join(managers_index_all_seasons, managerELO, by = "manager")
+```
+
+
+## Plotting this correlation
+
+```{r}
+pearson_corr <- cor(ELOvsINDEX$corrected_index, ELOvsINDEX$Coach.Rating, use = "complete.obs")
+
+index_vs_ELO <- ggplot(ELOvsINDEX, aes(x = corrected_index, y = Coach.Rating)) +
+  geom_point(col = "black", size=0.25) +
+  geom_smooth(method = "lm", se = FALSE, col="firebrick") +
+  xlab("Index Value") +
+  ylab("Elo") +
+  theme_apa()  
+
+```
+
+
+
+## Position Group Analysis for Final Paper
+
+First, the grouping of players and predictions by position group as well as role
+```{r}
+team.stats.pos.groups <- df %>% group_by(League, Team, Season, Gen..Role) %>% 
+  summarise(DAVIES_TOTAL = sum(DAVIES), 
+            DAVIES_weighted = sum(DAVIES*Min)/sum(Min))
+
+league.stats.pos.groups <- team.stats.pos.groups %>% group_by(League, Season, Gen..Role) %>%
+  summarise(League_DAVIES = mean(DAVIES_weighted),
+            Raw_League_DAVIES = mean(DAVIES_TOTAL),
+            SD_League = sd(DAVIES_weighted),
+            Raw_SD_League = sd(DAVIES_TOTAL))
+
+team.stats.with.league.pos <- left_join(team.stats.pos.groups,league.stats.pos.groups, join_by(League, Season, Gen..Role))
+team.stats.with.league.pos$Z <- (team.stats.with.league.pos$DAVIES_weighted - team.stats.with.league.pos$League_DAVIES)/team.stats.with.league.pos$SD_League
+```
+
+
+Now perform the same operation with predicted values
+```{r}
+team.predictions.pos.groups <- df_predict %>% group_by(League, Team.x, Season, Gen..Role) %>% 
+  summarise(predictions = sum(predicted_stats, na.rm=TRUE), 
+            weighted_predictions = sum(predicted_stats*Min, na.rm=TRUE)/sum(Min, na.rm=TRUE))
+
+league.predictions.pos.groups <- team.predictions.pos.groups %>% group_by(League, Season, Gen..Role) %>%
+  summarise(League_predictions = mean(weighted_predictions),
+            Raw_League_predictions = mean(predictions),
+            SD_predictions = sd(weighted_predictions),
+            Raw_SD_predictions = sd(predictions))
+
+
+joint.team.predictions.pos <- left_join(team.predictions.pos.groups, league.predictions.pos.groups, join_by(League, Season, Gen..Role))
+
+
+joint.team.predictions.pos$Z_predicted <- ifelse(joint.team.predictions.pos$SD_predictions > 0, (joint.team.predictions.pos$weighted_predictions - joint.team.predictions.pos$League_predictions)/joint.team.predictions.pos$SD_predictions, 0)
+
+joint.team.predictions.pos$Team <- joint.team.predictions.pos$Team.x
+
+team.based.statistics.pos <- left_join(team.stats.with.league.pos, joint.team.predictions.pos, join_by(Team, Season, Gen..Role))
+
+team.based.statistics.pos$League <- team.based.statistics.pos$League.x
+```
+
+Now join with manager data
+```{r}
+managers_index_final.pos <- left_join(team.based.statistics.pos, attributed_managers, join_by(Team, Season))
+```
+
+Now generating the statistic itself
+
+```{r}
+
+managers_index_final.pos$DW_norm <- (managers_index_final.pos$DAVIES_weighted-min(managers_index_final.pos$DAVIES_weighted))/(max(managers_index_final.pos$DAVIES_weighted)-min(managers_index_final.pos$DAVIES_weighted)) *0.99+0.01
+
+min(managers_index_final.pos$DAVIES_weighted)
+max(managers_index_final.pos$DAVIES_weighted)
+
+managers_index_final.pos$Weight_norm <- (managers_index_final.pos$weighted_predictions-min(managers_index_final.pos$weighted_predictions))/(max(managers_index_final.pos$weighted_predictions)-min(managers_index_final.pos$weighted_predictions)) *0.99+ 0.01
+
+
+range(managers_index_final.pos$DW_norm, na.rm=TRUE)
+range(managers_index_final.pos$Weight_norm, na.rm=TRUE)
+
+managers_index_final.pos$mandex <- (managers_index_final.pos$DW_norm- managers_index_final.pos$Weight_norm)/managers_index_final.pos$Weight_norm
+managers_index_final.pos <- managers_index_final.pos[order(-managers_index_final.pos$mandex),]
+```
+
+Now doing this grouping by managers to get the values
+
+```{r}
+
+managers_index_all_seasons.pos <- managers_index_final.pos%>% group_by(manager, Gen..Role) %>%
+  summarise(index = mean(mandex, na.rm=TRUE), count=n())
+
+managers_index_all_seasons.pos <- managers_index_all_seasons.pos[order(-managers_index_all_seasons.pos$index),]
+
+managers_index_all_seasons.pos$max_seasons <- 7
+
+managers_index_all_seasons.pos$corrected_index <- managers_index_all_seasons.pos$index/(managers_index_all_seasons.pos$max_seasons-managers_index_all_seasons.pos$count +1)
+
+managers_index_all_seasons.pos$readable_index <- managers_index_all_seasons.pos$corrected_index*100
+managers_index_all_seasons.pos <- managers_index_all_seasons.pos[order(-managers_index_all_seasons.pos$readable_index),]
+
+tail(managers_index_all_seasons.pos,10)
+
+range(managers_index_all_seasons.pos$corrected_index)
+
+```
+
+
+## Additional Charts Created for Final Paper
+
+
+```{r}
+dyche <- managers_index_all_seasons.pos[managers_index_all_seasons.pos$manager == "Sean Dyche",]
+
+pepklopp <- managers_index_all_seasons.pos[managers_index_all_seasons.pos$manager == "Jurgen Klopp" | managers_index_all_seasons.pos$manager == "Pep Guardiola",]
+
+pepklopp <- na.omit(pepklopp)
+
+pepkloppchart <- ggplot(pepklopp, aes(x = reorder(Gen..Role, -corrected_index), y = corrected_index, fill = manager)) +
+  geom_bar(stat = "identity", position = "dodge", width=0.4) +
+  scale_fill_manual(values = c("#D10022", "#84BBFF")) +
+  labs(
+    x = "Position Group",
+    y = "Index Value",
+    fill = "Manager",
+  ) +
+  theme_apa()+
+  theme(legend.text = element_text(size = 10),  # Adjust legend text size
+    legend.key.size = unit(0.4, "cm"),      # Adjust legend key size
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
+
+
+dyche <- na.omit(dyche)
+dychechart <- ggplot(dyche, aes(x = reorder(Gen..Role, -corrected_index), y = corrected_index)) +
+  geom_bar(stat = "identity", position = "dodge", width=0.4, fill="#0052CC") +
+  labs(
+    x = "Position Group",
+    y = "Index Value"
+  ) +
+  theme_apa()
+
+dychechart
+pepkloppchart
+
+```
+
+
+
+
